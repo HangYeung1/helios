@@ -3,6 +3,7 @@
 #include "Ray.hpp"
 #include "Scene.hpp"
 
+#include <cmath>
 #include <cstdlib>
 #include <generator>
 #include <glm/vec3.hpp>
@@ -14,46 +15,50 @@ void hls::Camera::render(const Scene &scene) const {
     image.reserve(image_width * image_height);
 
     // Rendering equation
-    for (auto ray : rays()) {
+    for (const Ray ray : rays()) {
         glm::vec3 color(0, 0, 0);
 
         for (unsigned int i = 0; i < subsamples; ++i) {
+            Ray       sample_ray = ray;
             glm::vec3 sample_color(0, 0, 0);
             float     throughput = 1;
 
             for (unsigned int j = 0; j < max_bounces; ++j) {
-                std::optional<Sphere::Intersection> hit_point = scene.hit(ray);
+                std::optional<Sphere::Hit> hit = scene.hit(sample_ray);
 
                 // Ambiance
-                if (!hit_point) {
-                    const glm::vec3 background_color(0.8, 0.8, 0.8);
-                    sample_color += throughput * background_color;
+                if (!hit) {
+                    float     t = 0.5f * (ray.direction.y + 1.0f);
+                    glm::vec3 sky =
+                        (1.0f - t) * glm::vec3(1.0f, 1.0f, 1.0f) // white
+                        + t * glm::vec3(0.5f, 0.7f, 1.0f);       // blue
+                    sample_color += throughput * sky;
                     break;
                 }
 
                 // Attentuation/contribution
                 const glm::vec3 surface_color(1, 0, 0);
-                sample_color += throughput * surface_color;
+                sample_color += throughput * (hit->normal * 0.5f + 0.5f);
 
-                const float attentuation = 0.8;
+                const float attentuation = 0.3;
                 throughput *= attentuation;
 
                 // Naive diffuse
-                float r1 = static_cast<float>(rand()) / RAND_MAX;
-                float r2 = static_cast<float>(rand()) / RAND_MAX;
+                float r1 = static_cast<float>(std::rand()) / RAND_MAX;
+                float r2 = static_cast<float>(std::rand()) / RAND_MAX;
 
                 float     phi   = r1 * 2 * 3.14;
                 float     theta = r2 * 3.14;
-                glm::vec3 direction{sin(theta) * cos(phi),
-                                    sin(theta) * sin(phi), cos(theta)};
+                glm::vec3 direction(std::sin(theta) * std::cos(phi), //
+                                    std::sin(theta) * std::sin(phi), //
+                                    std::cos(theta));
 
-                if (glm::dot(direction, hit_point->normal) < 0) {
+                if (glm::dot(direction, hit->normal) < 0) {
                     direction = -direction;
                 }
 
-                glm::vec3 eps_point =
-                    hit_point->point + (float)0.01 * hit_point->normal;
-                ray = Ray{eps_point, direction};
+                glm::vec3 eps_point = hit->point + 0.001f * hit->normal;
+                sample_ray          = Ray(eps_point, direction);
             }
 
             color += sample_color;
@@ -64,7 +69,7 @@ void hls::Camera::render(const Scene &scene) const {
     }
 
     std::print("P3 {} {} 255 ", image_height, image_width);
-    for (const auto &pixel : image) {
+    for (const glm::vec3 &pixel : image) {
         std::print("{} {} {} ", //
                    static_cast<unsigned int>(pixel[0] * 255),
                    static_cast<unsigned int>(pixel[1] * 255),
@@ -91,8 +96,8 @@ std::generator<hls::Ray> hls::Camera::rays() const {
     for (unsigned int y = 0; y < image_height; ++y) {
         for (unsigned int x = 0; x < image_width; ++x) {
             glm::vec3 pixel = base_pixel                         //
-                               + static_cast<float>(x) * delta_u  //
-                               + static_cast<float>(y) * delta_v; //
+                              + static_cast<float>(x) * delta_u  //
+                              + static_cast<float>(y) * delta_v; //
             glm::vec3 direction = glm::normalize(pixel - position);
             co_yield Ray(position, direction);
         }

@@ -14,9 +14,9 @@ class Scene {
         objects.push_back(object);
     }
 
-    std::optional<Sphere::Intersection> hit(const Ray &ray) const {
-        for (const auto &object : objects) {
-            std::optional<Sphere::Intersection> hit_point = object.hit(ray);
+    std::optional<Sphere::Hit> hit(const Ray &ray) const {
+        for (const Sphere &object : objects) {
+            std::optional<Sphere::Hit> hit_point = object.hit(ray);
             if (hit_point) {
                 return hit_point;
             }

@@ -6,18 +6,18 @@
 
 int main() {
     hls::Scene scene;
-    scene.add(hls::Sphere(glm::vec3(0, 0, 10), 10));
-    scene.add(hls::Sphere(glm::vec3(0, -150, 0), 100));
+    scene.add(hls::Sphere(glm::vec3(0, 10, 0), 10));
+    scene.add(hls::Sphere(glm::vec3(0, -10000, 0), 10000));
 
-    hls::Camera camera({.max_bounces     = 4,
-                        .subsamples      = 16,
+    hls::Camera camera({.max_bounces     = 2,
+                        .subsamples      = 8,
                         .image_width     = 250,
                         .image_height    = 250,
-                        .viewport_width  = 10,
-                        .viewport_height = 10,
-                        .focal_length    = 1.2,
-                        .position        = glm::vec3(0, 0, 0),
-                        .target          = glm::vec3(0, 0, 10),
+                        .viewport_width  = 5,
+                        .viewport_height = 5,
+                        .focal_length    = 1,
+                        .position        = glm::vec3(0, 10, -15),
+                        .target          = glm::vec3(0, 10, 0),
                         .up              = glm::vec3(0, 1, 0)});
     camera.render(scene);
 }

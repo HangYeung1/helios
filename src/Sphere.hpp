@@ -11,14 +11,14 @@ namespace hls {
 
 class Sphere {
   public:
-    struct Intersection {
+    struct Hit {
         glm::vec3 point;
         glm::vec3 normal;
     };
 
     Sphere(glm::vec3 center, float radius) : center(center), radius(radius) {};
 
-    std::optional<Intersection> hit(const Ray &ray) const {
+    std::optional<Hit> hit(const Ray &ray) const {
         glm::vec3 oc = ray.origin - center;
 
         float a = glm::dot(ray.direction, ray.direction);
@@ -37,11 +37,13 @@ class Sphere {
         float t2 = (-b + sqrt_discriminant) / (2.0f * a);
 
         if (t1 >= 0) {
-            return Intersection{ray.at(t1),
-                                glm::normalize(ray.at(t1) - center)};
+            glm::vec3 point = ray.at(t1);
+            return Hit{.point  = point,
+                       .normal = glm::normalize(point - center)};
         } else if (t2 >= 0) {
-            return Intersection{ray.at(t2),
-                                glm::normalize(ray.at(t2) - center)};
+            glm::vec3 point = ray.at(t2);
+            return Hit{.point  = point,
+                       .normal = glm::normalize(point - center)};
         }
         return std::nullopt;
     }

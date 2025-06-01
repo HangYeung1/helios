@@ -8,7 +8,7 @@ struct Ray {
     Ray(glm::vec3 origin, glm::vec3 direction)
         : origin(origin), direction(direction) {};
 
-    glm::vec3 at(float t) {
+    glm::vec3 at(float t) const {
         return origin + t * direction;
     }
 

@@ -3,15 +3,64 @@
 #include "Ray.hpp"
 #include "Scene.hpp"
 
+#include <cstdlib>
 #include <generator>
+#include <glm/vec3.hpp>
 #include <print>
 #include <vector>
 
 void hls::Camera::render(const Scene &scene) const {
     std::vector<glm::vec3> image;
     image.reserve(image_width * image_height);
-    for (const auto &ray : rays()) {
-        image.emplace_back(static_cast<float>(scene.hit(ray)), 0, 0);
+
+    // Rendering equation
+    for (auto ray : rays()) {
+        glm::vec3 color(0, 0, 0);
+
+        for (unsigned int i = 0; i < subsamples; ++i) {
+            glm::vec3 sample_color(0, 0, 0);
+            float     throughput = 1;
+
+            for (unsigned int j = 0; j < max_bounces; ++j) {
+                std::optional<Sphere::Intersection> hit_point = scene.hit(ray);
+
+                // Ambiance
+                if (!hit_point) {
+                    const glm::vec3 background_color(0.8, 0.8, 0.8);
+                    sample_color += throughput * background_color;
+                    break;
+                }
+
+                // Attentuation/contribution
+                const glm::vec3 surface_color(1, 0, 0);
+                sample_color += throughput * surface_color;
+
+                const float attentuation = 0.8;
+                throughput *= attentuation;
+
+                // Naive diffuse
+                float r1 = static_cast<float>(rand()) / RAND_MAX;
+                float r2 = static_cast<float>(rand()) / RAND_MAX;
+
+                float     phi   = r1 * 2 * 3.14;
+                float     theta = r2 * 3.14;
+                glm::vec3 direction{sin(theta) * cos(phi),
+                                    sin(theta) * sin(phi), cos(theta)};
+
+                if (glm::dot(direction, hit_point->normal) < 0) {
+                    direction = -direction;
+                }
+
+                glm::vec3 eps_point =
+                    hit_point->point + (float)0.01 * hit_point->normal;
+                ray = Ray{eps_point, direction};
+            }
+
+            color += sample_color;
+        }
+
+        color /= subsamples;
+        image.push_back(color);
     }
 
     std::print("P3 {} {} 255 ", image_height, image_width);

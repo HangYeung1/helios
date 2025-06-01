@@ -12,6 +12,8 @@ namespace hls {
 class Camera {
   public:
     struct Config {
+        unsigned int max_bounces;
+        unsigned int subsamples;
         unsigned int image_width;
         unsigned int image_height;
         float        viewport_width;
@@ -23,7 +25,9 @@ class Camera {
     };
 
     Camera(Config &&config)                        //
-        : image_width(config.image_width),         //
+        : max_bounces(config.max_bounces),         //
+          subsamples(config.subsamples),           //
+          image_width(config.image_width),         //
           image_height(config.image_height),       //
           viewport_width(config.viewport_width),   //
           viewport_height(config.viewport_height), //
@@ -37,6 +41,8 @@ class Camera {
   private:
     std::generator<Ray> rays() const;
 
+    unsigned int max_bounces;
+    unsigned int subsamples;
     unsigned int image_width;
     unsigned int image_height;
     float        viewport_width;

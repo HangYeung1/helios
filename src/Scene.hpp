@@ -2,6 +2,8 @@
 
 #include "Ray.hpp"
 #include "Sphere.hpp"
+#include <glm/vec3.hpp>
+#include <optional>
 #include <vector>
 
 namespace hls {
@@ -12,13 +14,14 @@ class Scene {
         objects.push_back(object);
     }
 
-    bool hit(const Ray &ray) const {
+    std::optional<Sphere::Intersection> hit(const Ray &ray) const {
         for (const auto &object : objects) {
-            if (object.hit(ray)) {
-                return true;
+            std::optional<Sphere::Intersection> hit_point = object.hit(ray);
+            if (hit_point) {
+                return hit_point;
             }
         }
-        return false;
+        return std::nullopt;
     }
 
   private:

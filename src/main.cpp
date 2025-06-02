@@ -9,12 +9,12 @@ int main() {
     scene.add(hls::Sphere(glm::vec3(0, 10, 0), 10));
     scene.add(hls::Sphere(glm::vec3(0, -10000, 0), 10000));
 
-    hls::Camera camera({.max_bounces     = 2,
-                        .pixel_samples   = 8,
-                        .image_width     = 250,
-                        .image_height    = 250,
-                        .viewport_width  = 5,
-                        .viewport_height = 5,
+    hls::Camera camera({.max_bounces     = 8,
+                        .pixel_samples   = 16,
+                        .image_width     = 256,
+                        .image_height    = 256,
+                        .viewport_width  = 4,
+                        .viewport_height = 4,
                         .focal_length    = 1,
                         .position        = glm::vec3(0, 10, -15),
                         .target          = glm::vec3(0, 10, 0),

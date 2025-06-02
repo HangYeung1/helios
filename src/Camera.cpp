@@ -18,28 +18,25 @@ void hls::Camera::render(const Scene &scene) const {
     // Rendering equation
     for (auto &&[pixel, rays] : std::views::zip(pixels, pixel_rays())) {
         for (auto &&ray : rays) {
-            glm::vec3 sample(0.0f, 0.0f, 0.0f);
-            float     throughput = 1.0f;
+            glm::vec3 radiance(0.0f, 0.0f, 0.0f);
+            glm::vec3 throughput(1.0f, 1.0f, 1.0f);
 
             for (auto _ : std::views::iota(0u, max_bounces)) {
                 std::optional<Sphere::Hit> hit = scene.hit(ray);
 
-                // Ambiance
+                // Ambient Light
                 if (!hit) {
                     float     t   = 0.5f * (ray.direction.y + 1.0f);
                     glm::vec3 sky =                              //
                         (1.0f - t) * glm::vec3(1.0f, 1.0f, 1.0f) //
                         + t * glm::vec3(0.5f, 0.7f, 1.0f);       //
-                    sample += throughput * sky;
+                    radiance += throughput * sky;
                     break;
                 }
 
-                // Attentuation/contribution
-                const glm::vec3 surface_color(1.0f, 0.0f, 0.0f);
-                sample += throughput * surface_color;
-
-                const float attenuation = 0.3f;
-                throughput *= attenuation;
+                // Surface Albedo
+                const glm::vec3 albedo(0.7f, 0.7f, 0.7f);
+                throughput *= albedo;
 
                 // Naive diffuse
                 float r1 = static_cast<float>(std::rand()) / RAND_MAX;
@@ -59,7 +56,7 @@ void hls::Camera::render(const Scene &scene) const {
                 ray                 = Ray(eps_point, direction);
             }
 
-            pixel += sample;
+            pixel += radiance;
         }
 
         pixel /= pixel_samples;

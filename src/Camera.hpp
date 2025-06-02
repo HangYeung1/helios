@@ -4,7 +4,6 @@
 #include "Scene.hpp"
 
 #include <generator>
-#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
 namespace hls {
@@ -13,7 +12,7 @@ class Camera {
   public:
     struct Config {
         unsigned int max_bounces;
-        unsigned int subsamples;
+        unsigned int pixel_samples;
         unsigned int image_width;
         unsigned int image_height;
         float        viewport_width;
@@ -26,7 +25,7 @@ class Camera {
 
     Camera(Config &&config)                        //
         : max_bounces(config.max_bounces),         //
-          subsamples(config.subsamples),           //
+          pixel_samples(config.pixel_samples),     //
           image_width(config.image_width),         //
           image_height(config.image_height),       //
           viewport_width(config.viewport_width),   //
@@ -39,10 +38,10 @@ class Camera {
     void render(const Scene &scene) const;
 
   private:
-    std::generator<Ray> rays() const;
+    std::generator<std::generator<Ray>> pixel_rays() const;
 
     unsigned int max_bounces;
-    unsigned int subsamples;
+    unsigned int pixel_samples;
     unsigned int image_width;
     unsigned int image_height;
     float        viewport_width;

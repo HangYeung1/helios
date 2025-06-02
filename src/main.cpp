@@ -10,7 +10,7 @@ int main() {
     scene.add(hls::Sphere(glm::vec3(0, -10000, 0), 10000));
 
     hls::Camera camera({.max_bounces     = 2,
-                        .subsamples      = 8,
+                        .pixel_samples   = 8,
                         .image_width     = 250,
                         .image_height    = 250,
                         .viewport_width  = 5,

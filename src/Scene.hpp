@@ -5,15 +5,20 @@
 
 #include <glm/vec3.hpp>
 #include <optional>
+#include <utility>
 #include <vector>
 
 namespace hls {
 
 class Scene {
   public:
-    template <typename T>
-    void add(T &&object) {
-        objects.push_back(object);
+    void add(Object &&object) {
+        objects.push_back(std::move(object));
+    }
+
+    template <typename... Args>
+    void add(Args &&...args) {
+        objects.emplace_back(std::forward<Args>(args)...);
     }
 
     std::optional<Ray> interact(const Ray &ray, glm::vec3 &radiance,

@@ -11,7 +11,11 @@ namespace hls {
 
 class Sphere {
   public:
-    Sphere(glm::vec3 center, float radius) : center(center), radius(radius) {};
+    Sphere(const glm::vec3 &center, float radius) noexcept
+        : center(center), radius(radius) {};
+
+    Sphere(glm::vec3 &&center, float radius) noexcept
+        : center(std::move(center)), radius(radius) {};
 
     std::optional<Ray> hit(const Ray &ray) const {
         glm::vec3 oc = ray.origin - center;
@@ -32,11 +36,9 @@ class Sphere {
         float t2 = (-b + sqrt_discriminant) / (2.0f * a);
 
         if (t1 >= 0) {
-            glm::vec3 point = ray.at(t1);
-            return Ray(point, glm::normalize(point - center));
+            return Ray(ray.at(t1), glm::normalize(ray.at(t1) - center));
         } else if (t2 >= 0) {
-            glm::vec3 point = ray.at(t2);
-            return Ray(point, glm::normalize(point - center));
+            return Ray(ray.at(t2), glm::normalize(ray.at(t2) - center));
         }
         return std::nullopt;
     }

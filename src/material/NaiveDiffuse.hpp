@@ -12,7 +12,8 @@ namespace hls {
 
 class NaiveDiffuse {
   public:
-    explicit NaiveDiffuse(glm::vec3 &&albedo) : albedo(albedo) {};
+    explicit NaiveDiffuse(glm::vec3 &&albedo) noexcept
+        : albedo(std::move(albedo)) {};
 
     Ray scatter(const Ray &normal, [[maybe_unused]] glm::vec3 &radiance,
                 glm::vec3 &throughput) const {

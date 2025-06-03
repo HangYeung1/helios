@@ -23,17 +23,17 @@ class Camera {
         glm::vec3    up;
     };
 
-    Camera(Config &&config)                        //
-        : max_bounces(config.max_bounces),         //
-          pixel_samples(config.pixel_samples),     //
-          image_width(config.image_width),         //
-          image_height(config.image_height),       //
-          viewport_width(config.viewport_width),   //
-          viewport_height(config.viewport_height), //
-          focal_length(config.focal_length),       //
-          position(config.position),               //
-          target(config.target),                   //
-          up(config.up) {};                        //
+    Camera(Config &&config) noexcept
+        : max_bounces(std::move(config.max_bounces)),
+          pixel_samples(std::move(config.pixel_samples)),
+          image_width(std::move(config.image_width)),
+          image_height(std::move(config.image_height)),
+          viewport_width(std::move(config.viewport_width)),
+          viewport_height(std::move(config.viewport_height)),
+          focal_length(std::move(config.focal_length)),
+          position(std::move(config.position)),
+          target(std::move(config.target)),
+          up(std::move(config.up)) {};
 
     void render(const Scene &scene) const;
 

@@ -4,3 +4,4 @@ AllowShortFunctionsOnASingleLine: false
 AlignConsecutiveDeclarations: true
 AlignConsecutiveAssignments: true
 AlwaysBreakTemplateDeclarations: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true

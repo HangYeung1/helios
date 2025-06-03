@@ -10,9 +10,9 @@ namespace hls {
 
 class Object {
   public:
-    template <typename T, typename U>
-    Object(T &&geometry, const U &material)
-        : geometry(geometry), material(material){};
+    Object(Geometry                       &&geometry,
+           const std::shared_ptr<Material> &material) noexcept
+        : geometry(std::move(geometry)), material(material) {};
 
     std::optional<Ray> hit(const Ray &ray) const {
         return std::visit([&](const auto &g) { return g.hit(ray); }, geometry);

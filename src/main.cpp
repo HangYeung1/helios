@@ -1,5 +1,4 @@
 #include "Camera.hpp"
-#include "Object.hpp"
 #include "Scene.hpp"
 
 #include <glm/vec3.hpp>
@@ -12,10 +11,8 @@ int main() {
         hls::NaiveDiffuse(glm::vec3(0.6f, 0.6f, 0.6f)));
 
     hls::Scene scene;
-    scene.add(hls::Object(hls::Sphere(glm::vec3(0.0f, 16.0f, 0.0f), 16.0f),
-                          light_gray));
-    scene.add(hls::Object(
-        hls::Sphere(glm::vec3(0.0f, -10000.0f, 0.0f), 10000.0f), dark_gray));
+    scene.add(hls::Sphere(glm::vec3(0.0f, 16.0f, 0.0f), 16.0f), light_gray);
+    scene.add(hls::Sphere(glm::vec3(0.0f, -1e4f, 0.0f), -1e4f), dark_gray);
 
     hls::Camera camera({.max_bounces     = 16u,
                         .pixel_samples   = 32u,

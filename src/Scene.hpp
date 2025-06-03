@@ -12,12 +12,12 @@ namespace hls {
 
 class Scene {
   public:
-    void add(Object &&object) {
+    inline void add(Object &&object) {
         objects.push_back(std::move(object));
     }
 
     template <typename... Args>
-    void add(Args &&...args) {
+    inline void add(Args &&...args) {
         objects.emplace_back(std::forward<Args>(args)...);
     }
 

@@ -14,12 +14,12 @@ class Object {
            const std::shared_ptr<Material> &material) noexcept
         : geometry(std::move(geometry)), material(material) {};
 
-    std::optional<Ray> hit(const Ray &ray) const {
+    inline std::optional<Ray> hit(const Ray &ray) const {
         return std::visit([&](const auto &g) { return g.hit(ray); }, geometry);
     }
 
-    Ray scatter(const Ray &normal, glm::vec3 &radiance,
-                glm::vec3 &throughput) const {
+    inline Ray scatter(const Ray &normal, glm::vec3 &radiance,
+                       glm::vec3 &throughput) const {
         return std::visit(
             [&](const auto &m) {
                 return m.scatter(normal, radiance, throughput);

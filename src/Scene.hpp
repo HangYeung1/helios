@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Object.hpp"
 #include "Ray.hpp"
-#include "Sphere.hpp"
+
 #include <glm/vec3.hpp>
 #include <optional>
 #include <vector>
@@ -10,22 +11,37 @@ namespace hls {
 
 class Scene {
   public:
-    void add(const Sphere &object) {
+    template <typename T>
+    void add(T &&object) {
         objects.push_back(object);
     }
 
-    std::optional<Sphere::Hit> hit(const Ray &ray) const {
-        for (const Sphere &object : objects) {
-            std::optional<Sphere::Hit> hit_point = object.hit(ray);
-            if (hit_point) {
-                return hit_point;
+    std::optional<Ray> interact(const Ray &ray, glm::vec3 &radiance,
+                                glm::vec3 &throughput) const {
+        std::optional<std::pair<const Object *, Ray>> closest;
+        float closest_dist = std::numeric_limits<float>::max();
+
+        for (const auto &object : objects) {
+            std::optional<Ray> normal = object.hit(ray);
+            if (normal) {
+                float dist = glm::length(normal->origin - ray.origin);
+                if (dist < closest_dist) {
+                    closest      = std::make_pair(&object, std::move(*normal));
+                    closest_dist = dist;
+                }
             }
         }
-        return std::nullopt;
+
+        if (!closest) {
+            return std::nullopt;
+        }
+
+        const auto &[object, normal] = *closest;
+        return object->scatter(normal, radiance, throughput);
     }
 
   private:
-    std::vector<Sphere> objects;
+    std::vector<Object> objects;
 };
 
 } // namespace hls

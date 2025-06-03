@@ -3,11 +3,9 @@
 #include "Ray.hpp"
 #include "Scene.hpp"
 
-#include <cmath>
 #include <cstdlib>
 #include <generator>
 #include <glm/vec3.hpp>
-#include <numbers>
 #include <print>
 #include <ranges>
 #include <vector>
@@ -22,10 +20,12 @@ void hls::Camera::render(const Scene &scene) const {
             glm::vec3 throughput(1.0f, 1.0f, 1.0f);
 
             for (auto _ : std::views::iota(0u, max_bounces)) {
-                std::optional<Sphere::Hit> hit = scene.hit(ray);
+                // Object scatter
+                std::optional<Ray> next =
+                    scene.interact(ray, radiance, throughput);
 
                 // Ambient Light
-                if (!hit) {
+                if (!next) {
                     float     t   = 0.5f * (ray.direction.y + 1.0f);
                     glm::vec3 sky =                              //
                         (1.0f - t) * glm::vec3(1.0f, 1.0f, 1.0f) //
@@ -34,41 +34,18 @@ void hls::Camera::render(const Scene &scene) const {
                     break;
                 }
 
-                // Surface Albedo
-                const glm::vec3 albedo(0.7f, 0.7f, 0.7f);
-                throughput *= albedo;
-
-                // Naive diffuse
-                float r1 = static_cast<float>(std::rand()) / RAND_MAX;
-                float r2 = static_cast<float>(std::rand()) / RAND_MAX;
-
-                float     phi   = r1 * 2.0f * std::numbers::pi_v<float>;
-                float     theta = r2 * std::numbers::pi_v<float>;
-                glm::vec3 direction(std::sin(theta) * std::cos(phi), //
-                                    std::sin(theta) * std::sin(phi), //
-                                    std::cos(theta));                //
-
-                if (glm::dot(direction, hit->normal) <= 0.0f) {
-                    direction = -direction;
-                }
-
-                glm::vec3 eps_point = hit->point + 0.001f * hit->normal;
-                ray                 = Ray(eps_point, direction);
+                ray = *next;
             }
 
-            pixel += radiance;
+            pixel += radiance / static_cast<float>(pixel_samples);
         }
-
-        pixel /= pixel_samples;
     }
 
     // Output PPM
     std::print("P3 {} {} 255 ", image_width, image_height);
     for (const glm::vec3 &pixel : pixels) {
-        std::print("{} {} {} ", //
-                   static_cast<unsigned int>(pixel[0] * 255),
-                   static_cast<unsigned int>(pixel[1] * 255),
-                   static_cast<unsigned int>(pixel[2] * 255));
+        glm::vec<3, unsigned int> rgb = glm::clamp(pixel, 0.0f, 1.0f) * 255.99f;
+        std::print("{} {} {} ", rgb[0], rgb[1], rgb[2]);
     }
 }
 

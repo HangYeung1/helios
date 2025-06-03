@@ -1,5 +1,6 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: false
 AlignConsecutiveDeclarations: true
 AlignConsecutiveAssignments: true
+AlwaysBreakTemplateDeclarations: true

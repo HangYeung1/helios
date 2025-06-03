@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Ray.hpp"
+#include "../Ray.hpp"
 
 #include <cmath>
-#include <glm/glm.hpp>
+#include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
 #include <optional>
 
@@ -11,14 +11,9 @@ namespace hls {
 
 class Sphere {
   public:
-    struct Hit {
-        glm::vec3 point;
-        glm::vec3 normal;
-    };
-
     Sphere(glm::vec3 center, float radius) : center(center), radius(radius) {};
 
-    std::optional<Hit> hit(const Ray &ray) const {
+    std::optional<Ray> hit(const Ray &ray) const {
         glm::vec3 oc = ray.origin - center;
 
         float a = glm::dot(ray.direction, ray.direction);
@@ -38,12 +33,10 @@ class Sphere {
 
         if (t1 >= 0) {
             glm::vec3 point = ray.at(t1);
-            return Hit{.point  = point,
-                       .normal = glm::normalize(point - center)};
+            return Ray(point, glm::normalize(point - center));
         } else if (t2 >= 0) {
             glm::vec3 point = ray.at(t2);
-            return Hit{.point  = point,
-                       .normal = glm::normalize(point - center)};
+            return Ray(point, glm::normalize(point - center));
         }
         return std::nullopt;
     }

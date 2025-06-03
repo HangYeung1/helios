@@ -7,6 +7,8 @@
 #include <glm/vec3.hpp>
 #include <optional>
 
+static constexpr float EPSILON = 1e-3f;
+
 namespace hls {
 
 class Sphere {
@@ -24,23 +26,28 @@ class Sphere {
         float b = 2.0f * glm::dot(oc, ray.direction);
         float c = glm::dot(oc, oc) - radius * radius;
 
-        float discriminant = b * b - 4 * a * c;
-
-        if (discriminant < 0) {
+        float discrim = b * b - 4.0f * a * c;
+        if (discrim < 0.0f) {
             return std::nullopt;
         }
 
-        float sqrt_discriminant = std::sqrt(discriminant);
+        float sqrt_discrim = std::sqrt(discrim);
+        float t1           = (-b - sqrt_discrim) / (2.0f * a);
+        float t2           = (-b + sqrt_discrim) / (2.0f * a);
 
-        float t1 = (-b - sqrt_discriminant) / (2.0f * a);
-        float t2 = (-b + sqrt_discriminant) / (2.0f * a);
-
-        if (t1 >= 0) {
-            return Ray(ray.at(t1), glm::normalize(ray.at(t1) - center));
-        } else if (t2 >= 0) {
-            return Ray(ray.at(t2), glm::normalize(ray.at(t2) - center));
+        if (t1 < 0.0f && t2 < 0.0f) {
+            return std::nullopt;
         }
-        return std::nullopt;
+        float t = (t1 >= 0.0f) ? t1 : t2;
+
+        glm::vec3 point  = ray.at(t);
+        glm::vec3 normal = glm::normalize(point - center);
+
+        if (glm::dot(ray.direction, normal) >= 0.0f) {
+            normal = -normal;
+        }
+
+        return Ray(point + EPSILON * normal, std::move(normal));
     }
 
   private:

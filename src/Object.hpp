@@ -15,10 +15,15 @@ class Object {
         : geometry(std::move(geometry)), material(material) {};
 
     inline std::optional<Ray> hit(const Ray &ray) const {
-        return std::visit([&](const auto &g) { return g.hit(ray); }, geometry);
+        return std::visit(
+            [&](const auto &g) {
+                return g.hit(ray);
+            },
+            geometry);
     }
 
-    inline Ray scatter(const Ray &normal, glm::vec3 &radiance,
+    inline Ray scatter(const Ray &normal,
+                       glm::vec3 &radiance,
                        glm::vec3 &throughput) const {
         return std::visit(
             [&](const auto &m) {

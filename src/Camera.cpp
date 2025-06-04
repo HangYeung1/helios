@@ -54,8 +54,8 @@ std::generator<std::generator<hls::Ray>> hls::Camera::pixel_rays() const {
     glm::vec3 right   = glm::normalize(glm::cross(forward, up));
     glm::vec3 true_up = glm::cross(right, forward);
 
-    float pixel_width  = viewport_width / image_width;
-    float pixel_height = viewport_height / image_height;
+    float pixel_width  = viewport_width / static_cast<float>(image_width);
+    float pixel_height = viewport_height / static_cast<float>(image_height);
 
     glm::vec3 delta_u = right * pixel_width;
     glm::vec3 delta_v = -true_up * pixel_height;

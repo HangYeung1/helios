@@ -1,7 +1,24 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
-AllowShortFunctionsOnASingleLine: false
-AlignConsecutiveDeclarations: true
-AlignConsecutiveAssignments: true
-AlwaysBreakTemplateDeclarations: true
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
+AlignConsecutiveDeclarations: Consecutive
+AlignConsecutiveAssignments: Consecutive
+AlignOperands: Align
+
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: None
+AllowShortLoopsOnASingleLine: false
+
+BinPackParameters: false
+BinPackArguments: false
+
+BreakTemplateDeclarations: Yes
+BreakAfterReturnType: Automatic
+BreakBeforeBinaryOperators: NonAssignment
+
+InsertBraces: true
+
+PackConstructorInitializers: NextLine
+
+PenaltyReturnTypeOnItsOwnLine: 9999

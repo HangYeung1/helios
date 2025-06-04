@@ -21,7 +21,8 @@ class Scene {
         objects.emplace_back(std::forward<Args>(args)...);
     }
 
-    std::optional<Ray> interact(const Ray &ray, glm::vec3 &radiance,
+    std::optional<Ray> interact(const Ray &ray,
+                                glm::vec3 &radiance,
                                 glm::vec3 &throughput) const {
         std::optional<std::pair<const Object *, Ray>> closest;
         float closest_dist = std::numeric_limits<float>::max();

@@ -15,8 +15,9 @@ class NaiveDiffuse {
     explicit NaiveDiffuse(glm::vec3 &&albedo) noexcept
         : albedo(std::move(albedo)) {};
 
-    Ray scatter(const Ray &normal, [[maybe_unused]] glm::vec3 &radiance,
-                glm::vec3 &throughput) const {
+    Ray scatter(const Ray                  &normal,
+                [[maybe_unused]] glm::vec3 &radiance,
+                glm::vec3                  &throughput) const {
         // Surface Albedo
         throughput *= albedo;
 
@@ -26,9 +27,9 @@ class NaiveDiffuse {
 
         float     phi   = r1 * 2.0f * std::numbers::pi_v<float>;
         float     theta = r2 * std::numbers::pi_v<float>;
-        glm::vec3 direction(std::sin(theta) * std::cos(phi), //
-                            std::sin(theta) * std::sin(phi), //
-                            std::cos(theta));                //
+        glm::vec3 direction(std::sin(theta) * std::cos(phi),
+                            std::sin(theta) * std::sin(phi),
+                            std::cos(theta));
 
         if (glm::dot(direction, normal.direction) <= 0.0f) {
             direction = -direction;

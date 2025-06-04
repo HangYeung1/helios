@@ -35,7 +35,7 @@ class NaiveDiffuse {
             direction = -direction;
         }
 
-        return Ray(normal.at(0.001f), direction);
+        return Ray(normal.origin, direction);
     }
 
   private:

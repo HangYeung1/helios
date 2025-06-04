@@ -27,9 +27,8 @@ void hls::Camera::render(const Scene &scene) const {
                 // Ambient Light
                 if (!next) {
                     float     t   = 0.5f * (ray.direction.y + 1.0f);
-                    glm::vec3 sky =                              //
-                        (1.0f - t) * glm::vec3(1.0f, 1.0f, 1.0f) //
-                        + t * glm::vec3(0.5f, 0.7f, 1.0f);       //
+                    glm::vec3 sky = (1.0f - t) * glm::vec3(1.0f, 1.0f, 1.0f)
+                                    + t * glm::vec3(0.5f, 0.7f, 1.0f);
                     radiance += throughput * sky;
                     break;
                 }
@@ -60,10 +59,9 @@ std::generator<std::generator<hls::Ray>> hls::Camera::pixel_rays() const {
     glm::vec3 delta_u = right * pixel_width;
     glm::vec3 delta_v = -true_up * pixel_height;
 
-    glm::vec3 base_pixel =                                   //
-        position + forward * focal_length                    //
-        - right * (viewport_width - pixel_width) * 0.5f      //
-        + true_up * (viewport_height - pixel_height) * 0.5f; //
+    glm::vec3 base_pixel = position + forward * focal_length
+                           - right * (viewport_width - pixel_width) * 0.5f
+                           + true_up * (viewport_height - pixel_height) * 0.5f;
 
     for (auto y : std::views::iota(0u, image_height)) {
         for (auto x : std::views::iota(0u, image_width)) {

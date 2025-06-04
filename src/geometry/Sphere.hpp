@@ -7,7 +7,7 @@
 #include <glm/vec3.hpp>
 #include <optional>
 
-static constexpr float EPSILON = 1e-3f;
+static constexpr float EPSILON = 1e-2f;
 
 namespace hls {
 

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../Ray.hpp"
+#include "../Sampler.hpp"
 
 #include <cmath>
-#include <cstdlib>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
 #include <numbers>
@@ -22,9 +22,7 @@ class NaiveDiffuse {
         throughput *= albedo;
 
         // Naive diffuse
-        float r1 = static_cast<float>(std::rand()) / RAND_MAX;
-        float r2 = static_cast<float>(std::rand()) / RAND_MAX;
-
+        auto [r1, r2]   = Sampler<2>::rand();
         float     phi   = r1 * 2.0f * std::numbers::pi_v<float>;
         float     theta = r2 * std::numbers::pi_v<float>;
         glm::vec3 direction(std::sin(theta) * std::cos(phi),

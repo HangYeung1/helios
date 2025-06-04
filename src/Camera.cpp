@@ -1,9 +1,9 @@
 #include "Camera.hpp"
 
 #include "Ray.hpp"
+#include "Sampler.hpp"
 #include "Scene.hpp"
 
-#include <cstdlib>
 #include <generator>
 #include <glm/vec3.hpp>
 #include <print>
@@ -72,9 +72,7 @@ std::generator<std::generator<hls::Ray>> hls::Camera::pixel_rays() const {
             // Randomized subsampler
             co_yield [&]() -> std::generator<Ray> {
                 for (auto _ : std::views::iota(0u, pixel_samples)) {
-                    float r1 = static_cast<float>(std::rand()) / RAND_MAX;
-                    float r2 = static_cast<float>(std::rand()) / RAND_MAX;
-
+                    auto [r1, r2]      = Sampler<2>::rand();
                     glm::vec3 jittered = pixel                    //
                                          + (r1 - 0.5f) * delta_u  //
                                          + (r2 - 0.5f) * delta_v; //

@@ -3,7 +3,6 @@
 #include "Ray.hpp"
 #include "Scene.hpp"
 
-#include <generator>
 #include <glm/vec3.hpp>
 
 namespace hls {
@@ -38,7 +37,7 @@ class Camera {
     void render(const Scene &scene) const;
 
   private:
-    std::generator<std::generator<Ray>> pixel_rays() const;
+    glm::vec3 trace(Ray &ray, const Scene &scene) const;
 
     unsigned int max_bounces;
     unsigned int pixel_samples;

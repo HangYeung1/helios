@@ -22,12 +22,13 @@ class Object {
             geometry);
     }
 
-    inline Ray scatter(const Ray &normal,
-                       glm::vec3 &radiance,
-                       glm::vec3 &throughput) const {
-        return std::visit(
+    inline void scatter(Ray       &incident,
+                        const Ray &normal,
+                        glm::vec3 &radiance,
+                        glm::vec3 &throughput) const {
+        std::visit(
             [&](const auto &m) {
-                return m.scatter(normal, radiance, throughput);
+                return m.scatter(incident, normal, radiance, throughput);
             },
             *material);
     }

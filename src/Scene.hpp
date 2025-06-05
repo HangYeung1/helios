@@ -21,16 +21,16 @@ class Scene {
         objects.emplace_back(std::forward<Args>(args)...);
     }
 
-    std::optional<Ray> interact(const Ray &ray,
+    [[nodiscard]] bool interact(Ray       &incident,
                                 glm::vec3 &radiance,
                                 glm::vec3 &throughput) const {
         std::optional<std::pair<const Object *, Ray>> closest;
         float closest_dist = std::numeric_limits<float>::max();
 
         for (const auto &object : objects) {
-            std::optional<Ray> normal = object.hit(ray);
+            std::optional<Ray> normal = object.hit(incident);
             if (normal) {
-                float dist = glm::length(normal->origin - ray.origin);
+                float dist = glm::length(normal->origin - incident.origin);
                 if (dist < closest_dist) {
                     closest      = std::make_pair(&object, std::move(*normal));
                     closest_dist = dist;
@@ -39,11 +39,12 @@ class Scene {
         }
 
         if (!closest) {
-            return std::nullopt;
+            return false;
         }
 
         const auto &[object, normal] = *closest;
-        return object->scatter(normal, radiance, throughput);
+        object->scatter(incident, normal, radiance, throughput);
+        return true;
     }
 
   private:

@@ -21,19 +21,16 @@ void hls::Camera::render(const Scene &scene) const {
 
             for (auto _ : std::views::iota(0u, max_bounces)) {
                 // Object scatter
-                std::optional<Ray> next =
-                    scene.interact(ray, radiance, throughput);
+                bool success = scene.interact(ray, radiance, throughput);
 
                 // Ambient Light
-                if (!next) {
+                if (!success) {
                     float     t   = 0.5f * (ray.direction.y + 1.0f);
                     glm::vec3 sky = (1.0f - t) * glm::vec3(1.0f, 1.0f, 1.0f)
                                     + t * glm::vec3(0.5f, 0.7f, 1.0f);
                     radiance += throughput * sky;
                     break;
                 }
-
-                ray = *next;
             }
 
             pixel += radiance / static_cast<float>(pixel_samples);

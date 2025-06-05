@@ -10,9 +10,14 @@ namespace hls {
 using Material = std::variant<NaiveDiffuse>;
 
 template <typename T>
-concept Scatterable = requires(
-    const T &obj, const Ray &ray, glm::vec3 &radiance, glm::vec3 &throughput) {
-    { obj.scatter(ray, radiance, throughput) } -> std::same_as<Ray>;
+concept Scatterable = requires(const T   &obj,
+                               Ray       &incident,
+                               const Ray &normal,
+                               glm::vec3 &radiance,
+                               glm::vec3 &throughput) {
+    {
+        obj.scatter(incident, normal, radiance, throughput)
+    } -> std::same_as<void>;
 };
 
 template <typename Variant>

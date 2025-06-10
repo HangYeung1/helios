@@ -43,8 +43,7 @@ class Scene {
         }
 
         const auto &[object, normal] = *closest;
-        object->scatter(incident, normal, radiance, throughput);
-        return true;
+        return object->scatter(incident, normal, radiance, throughput);
     }
 
   private:

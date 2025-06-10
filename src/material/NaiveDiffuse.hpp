@@ -15,10 +15,10 @@ class NaiveDiffuse {
     explicit NaiveDiffuse(glm::vec3 &&albedo) noexcept
         : albedo(std::move(albedo)) {};
 
-    void scatter(Ray                        &incident,
-                 const Ray                  &normal,
-                 [[maybe_unused]] glm::vec3 &radiance,
-                 glm::vec3                  &throughput) const {
+    [[nodiscard]] bool scatter(Ray                        &incident,
+                               const Ray                  &normal,
+                               [[maybe_unused]] glm::vec3 &radiance,
+                               glm::vec3                  &throughput) const {
         // Surface Albedo
         throughput *= albedo;
 
@@ -35,6 +35,7 @@ class NaiveDiffuse {
         }
 
         incident = Ray(normal.origin, direction);
+        return true;
     }
 
   private:

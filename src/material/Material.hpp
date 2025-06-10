@@ -17,7 +17,7 @@ concept Scatterable = requires(const T   &obj,
                                glm::vec3 &throughput) {
     {
         obj.scatter(incident, normal, radiance, throughput)
-    } -> std::same_as<void>;
+    } -> std::same_as<bool>;
 };
 
 template <typename Variant>

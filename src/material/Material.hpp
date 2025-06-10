@@ -1,13 +1,14 @@
 #pragma once
 
 #include "NaiveDiffuse.hpp"
+#include "PureEmissive.hpp"
 
 #include <concepts>
 #include <variant>
 
 namespace hls {
 
-using Material = std::variant<NaiveDiffuse>;
+using Material = std::variant<NaiveDiffuse, PureEmissive>;
 
 template <typename T>
 concept Scatterable = requires(const T   &obj,

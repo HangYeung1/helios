@@ -66,15 +66,8 @@ glm::vec3 hls::Camera::trace(Ray &ray, const Scene &scene) const {
     glm::vec3 throughput(1.0f, 1.0f, 1.0f);
 
     for (auto _ : std::views::iota(0u, max_bounces)) {
-        // Object scatter
         bool success = scene.interact(ray, radiance, throughput);
-
-        // Ambient Light
         if (!success) {
-            float     t   = 0.5f * (ray.direction.y + 1.0f);
-            glm::vec3 sky = (1.0f - t) * glm::vec3(1.0f, 1.0f, 1.0f)
-                            + t * glm::vec3(0.3f, 0.5f, 1.0f);
-            radiance += throughput * sky;
             break;
         }
     }

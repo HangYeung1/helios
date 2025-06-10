@@ -6,9 +6,9 @@
 
 int main() {
     auto light_gray = std::make_shared<hls::Material>(
-        hls::NaiveDiffuse(glm::vec3(0.9f, 0.9f, 0.9f)));
+        hls::NaiveDiffuse(glm::vec3(0.8f, 0.8f, 0.8f)));
     auto dark_gray = std::make_shared<hls::Material>(
-        hls::NaiveDiffuse(glm::vec3(0.6f, 0.6f, 0.6f)));
+        hls::NaiveDiffuse(glm::vec3(0.3f, 0.3f, 0.3f)));
 
     hls::Scene scene;
     scene.add(hls::Sphere(glm::vec3(0.0f, 16.0f, 0.0f), 16.0f), light_gray);

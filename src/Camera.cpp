@@ -58,12 +58,7 @@ void hls::Camera::render(const Scene &scene) const {
         }
     }
 
-    // Output PPM
-    std::print("P3 {} {} 255 ", image_width, image_height);
-    for (const glm::vec3 &pixel : pixels) {
-        glm::vec<3, unsigned int> rgb = glm::clamp(pixel, 0.0f, 1.0f) * 255.99f;
-        std::print("{} {} {} ", rgb[0], rgb[1], rgb[2]);
-    }
+    output(pixels);
 }
 
 glm::vec3 hls::Camera::trace(Ray &ray, const Scene &scene) const {
@@ -78,11 +73,27 @@ glm::vec3 hls::Camera::trace(Ray &ray, const Scene &scene) const {
         if (!success) {
             float     t   = 0.5f * (ray.direction.y + 1.0f);
             glm::vec3 sky = (1.0f - t) * glm::vec3(1.0f, 1.0f, 1.0f)
-                            + t * glm::vec3(0.5f, 0.7f, 1.0f);
+                            + t * glm::vec3(0.3f, 0.5f, 1.0f);
             radiance += throughput * sky;
             break;
         }
     }
 
     return radiance;
+}
+
+void hls::Camera::output(const std::vector<glm::vec3> &pixels) const {
+    std::print("P3 {} {} 255 ", image_width, image_height);
+    for (const glm::vec3 &pixel : pixels) {
+        // Reinhard tonemapping
+        glm::vec3 tone_mapped = pixel / (pixel + 1.0f);
+
+        // Gamma 2.2 corerction
+        glm::vec3 gamma_corrected =
+            glm::pow(tone_mapped, glm::vec3(1.0f / 2.2f));
+
+        // Quantize
+        glm::uvec3 rgb = glm::round(gamma_corrected * 255.00f);
+        std::print("{} {} {} ", rgb[0], rgb[1], rgb[2]);
+    }
 }

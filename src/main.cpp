@@ -12,13 +12,13 @@ int main() {
     auto white_light = std::make_shared<hls::Material>(
         hls::PureEmissive(glm::vec3(0.1f, 0.1f, 0.1f)));
     auto red_light = std::make_shared<hls::Material>(
-        hls::PureEmissive(glm::vec3(2.0f, 0.0f, 0.0f)));
+        hls::PureEmissive(glm::vec3(1.0f, 0.0f, 0.0f)));
     auto blue_light = std::make_shared<hls::Material>(
-        hls::PureEmissive(glm::vec3(0.0f, 0.0f, 2.0f)));
+        hls::PureEmissive(glm::vec3(0.0f, 0.0f, 1.0f)));
 
     hls::Scene scene;
     scene.add(hls::Sphere(glm::vec3(0.0f, 16.0f, 0.0f), 16.0f), light_gray);
-    scene.add(hls::Sphere(glm::vec3(0.0f, -1e4f, 0.0f), 1e4f), dark_gray);
+    scene.add(hls::Sphere(glm::vec3(0.0f, -1e5f, 0.0f), 1e5f), dark_gray);
     scene.add(hls::Sphere(glm::vec3(0.0f, 250.0f, 0.0f), 50.0f), white_light);
     scene.add(hls::Sphere(glm::vec3(-20.0f, 4.0f, 3.0f), 4.0f), red_light);
     scene.add(hls::Sphere(glm::vec3(20.0f, 4.0f, 3.0f), 4.0f), blue_light);

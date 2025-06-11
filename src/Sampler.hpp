@@ -1,33 +1,50 @@
 #pragma once
 
-#include <algorithm>
-#include <array>
-#include <random>
+#include "Constants.hpp"
 
-static constexpr std::size_t MAX_DIM = 3;
+#include <array>
+#include <cmath>
+#include <ranges>
+#include <stdexcept>
 
 namespace hls {
 
-template <std::size_t N>
-    requires(N >= 1 && N <= MAX_DIM)
 class Sampler {
   public:
-    using return_type = std::conditional_t<N == 1, float, std::array<float, N>>;
-    static return_type rand() {
+    template <std::size_t N>
+        requires(N >= 1 && N <= constants::SOBOL_MAX_DIM)
+    static std::conditional_t<N == 1, float, std::array<float, N>> sample() {
+        if (dimension + N > constants::SOBOL_MAX_DIM) {
+            throw std::out_of_range("out of sobol dimensions");
+        }
+
         std::array<float, N> result;
-        std::generate(result.begin(), result.end(), []() {
-            return uniform(engine);
-        });
+        for (auto &sample : result) {
+            uint32_t bits = 0;
+            for (auto i : std::views::iota(0u, constants::SOBOL_MAX_BITS)) {
+                if ((index >> i) & 1) {
+                    bits ^= constants::SOBOL_DIRECTIONS[dimension][i];
+                }
+            }
+            sample = static_cast<float>(bits) / std::pow(2.0f, 32.0f);
+            ++dimension;
+        }
 
         if constexpr (N == 1) {
             return result[0];
+        } else {
+            return result;
         }
-        return result;
+    }
+
+    static void step() {
+        ++index;
+        dimension = 0;
     }
 
   private:
-    static inline std::mt19937 engine{std::random_device{}()};
-    static inline std::uniform_real_distribution<float> uniform{0.0f, 1.0f};
+    static inline std::size_t index     = 0;
+    static inline std::size_t dimension = 0;
 };
 
 } // namespace hls

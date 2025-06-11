@@ -7,8 +7,6 @@
 #include <glm/vec3.hpp>
 #include <optional>
 
-static constexpr float EPSILON = 1e-2f;
-
 namespace hls {
 
 class Sphere {
@@ -51,6 +49,8 @@ class Sphere {
     }
 
   private:
+    static constexpr float EPSILON = 1e-2f;
+
     glm::vec3 center;
     float     radius;
 };

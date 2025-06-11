@@ -46,7 +46,7 @@ void hls::Camera::render(const Scene &scene) const {
     std::vector<glm::vec3> pixels(image_width * image_height);
     for (auto [pixel, center] : std::views::zip(pixels, centers)) {
         for (auto _ : std::views::iota(0u, pixel_samples)) {
-            auto [r1, r2]      = Sampler<2>::rand();
+            auto [r1, r2]      = Sampler::sample<2>();
             glm::vec3 jittered = center //
                                  + (r1 - 0.5f) * delta_u
                                  + (r2 - 0.5f) * delta_v;
@@ -55,6 +55,7 @@ void hls::Camera::render(const Scene &scene) const {
             Ray       ray(position, direction);
 
             pixel += trace(ray, scene) / static_cast<float>(pixel_samples);
+            Sampler::step();
         }
     }
 

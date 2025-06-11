@@ -23,7 +23,7 @@ class NaiveDiffuse {
         throughput *= albedo;
 
         // Naive diffuse
-        auto [r1, r2]   = Sampler<2>::rand();
+        auto [r1, r2]   = Sampler::sample<2>();
         float     phi   = r1 * 2.0f * std::numbers::pi_v<float>;
         float     theta = r2 * std::numbers::pi_v<float>;
         glm::vec3 direction(std::sin(theta) * std::cos(phi),

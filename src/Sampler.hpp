@@ -43,8 +43,8 @@ class Sampler {
     }
 
   private:
-    static inline std::size_t index     = 0;
-    static inline std::size_t dimension = 0;
+    static thread_local inline std::size_t index     = 0;
+    static thread_local inline std::size_t dimension = 0;
 };
 
 } // namespace hls

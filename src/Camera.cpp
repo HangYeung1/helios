@@ -7,6 +7,7 @@
 #include <glm/vec3.hpp>
 #include <print>
 #include <ranges>
+#include <thread>
 #include <vector>
 
 void hls::Camera::render(const Scene &scene) const {
@@ -18,44 +19,44 @@ void hls::Camera::render(const Scene &scene) const {
     float pixel_width  = viewport_width / static_cast<float>(image_width);
     float pixel_height = viewport_height / static_cast<float>(image_height);
 
-    glm::vec3 delta_u    = right * pixel_width;
-    glm::vec3 delta_v    = -true_up * pixel_height;
-    glm::vec3 base_pixel = position + forward * focal_length
-                           - right * (viewport_width - pixel_width) * 0.5f
-                           + true_up * (viewport_height - pixel_height) * 0.5f;
+    glm::vec3 delta_u       = right * pixel_width;
+    glm::vec3 delta_v       = -true_up * pixel_height;
+    glm::vec3 matrix_origin = position + forward * focal_length
+                              - right * viewport_width * 0.5f
+                              + true_up * viewport_height * 0.5f;
 
-    // Get lazy range of pixel centers
-    auto generate_product = [this](unsigned int y) {
-        return std::views::zip(std::views::iota(0u, image_width),
-                               std::views::repeat(y));
-    };
-    auto cartesian = std::views::iota(0u, image_height)
-                     | std::views::transform(generate_product)
-                     | std::views::join;
+    auto x_views = std::views::iota(0u, image_width) | std::views::chunk(256);
+    auto y_views = std::views::iota(0u, image_height) | std::views::chunk(256);
+    auto patches = std::views::cartesian_product(x_views, y_views)
+                   | std::views::transform([](auto pair) {
+                         auto [x_view, y_view] = pair;
+                         return std::views::cartesian_product(x_view, y_view);
+                     });
 
-    auto generate_center =
-        [&](const std::pair<unsigned int, unsigned int> &point) {
-            auto &[x, y] = point;
-            return base_pixel //
-                   + static_cast<float>(x) * delta_u
-                   + static_cast<float>(y) * delta_v;
-        };
-    auto centers = cartesian | std::views::transform(generate_center);
-
-    // Render
     std::vector<glm::vec3> pixels(image_width * image_height);
-    for (auto [pixel, center] : std::views::zip(pixels, centers)) {
-        for (auto _ : std::views::iota(0u, pixel_samples)) {
-            auto [r1, r2]      = Sampler::sample<2>();
-            glm::vec3 jittered = center //
-                                 + (r1 - 0.5f) * delta_u
-                                 + (r2 - 0.5f) * delta_v;
+    {
+        std::vector<std::jthread> threads;
+        for (auto patch : patches) {
+            threads.emplace_back([&, this, patch = std::move(patch)]() {
+                for (auto [x, y] : patch) {
+                    glm::vec3 accumulated(0);
+                    glm::vec3 basis = matrix_origin
+                                      + static_cast<float>(x) * delta_u
+                                      + static_cast<float>(y) * delta_v;
 
-            glm::vec3 direction = glm::normalize(jittered - position);
-            Ray       ray(position, direction);
+                    for (auto _ : std::views::iota(0u, pixel_samples)) {
+                        auto [r1, r2]  = Sampler::sample<2>();
+                        glm::vec3 cast = basis + r1 * delta_u + r2 * delta_v;
+                        Ray ray(position, glm::normalize(cast - position));
 
-            pixel += trace(ray, scene) / static_cast<float>(pixel_samples);
-            Sampler::step();
+                        accumulated += trace(ray, scene);
+                        Sampler::step();
+                    }
+
+                    accumulated /= static_cast<float>(pixel_samples);
+                    pixels[y * image_width + x] += accumulated;
+                }
+            });
         }
     }
 

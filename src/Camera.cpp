@@ -25,39 +25,50 @@ void hls::Camera::render(const Scene &scene) const {
                               - right * viewport_width * 0.5f
                               + true_up * viewport_height * 0.5f;
 
-    auto x_views = std::views::iota(0u, image_width) | std::views::chunk(256);
-    auto y_views = std::views::iota(0u, image_height) | std::views::chunk(256);
-    auto patches = std::views::cartesian_product(x_views, y_views)
-                   | std::views::transform([](auto pair) {
-                         auto [x_view, y_view] = pair;
-                         return std::views::cartesian_product(x_view, y_view);
+    // Create render patches
+    auto x_chunks = std::views::iota(0u, image_width) | std::views::chunk(256);
+    auto y_chunks = std::views::iota(0u, image_height) | std::views::chunk(256);
+
+    auto cartesian_product = [](const auto &a, const auto &b) {
+        return b | std::views::transform([=](const auto &b_item) { // row major
+                   return std::views::zip(a, std::views::repeat(b_item));
+               })
+               | std::views::join;
+    };
+    auto patches = cartesian_product(x_chunks, y_chunks)
+                   | std::views::transform([=](const auto &pair) {
+                         auto [x_chunk, y_chunk] = pair;
+                         return cartesian_product(x_chunk, y_chunk);
                      });
 
-    std::vector<glm::vec3> pixels(image_width * image_height);
-    {
-        std::vector<std::jthread> threads;
-        for (auto patch : patches) {
-            threads.emplace_back([&, this, patch = std::move(patch)]() {
-                for (auto [x, y] : patch) {
-                    glm::vec3 accumulated(0);
-                    glm::vec3 basis = matrix_origin
-                                      + static_cast<float>(x) * delta_u
-                                      + static_cast<float>(y) * delta_v;
+    // Render patch per thread
+    std::vector<glm::vec3>   pixels(image_width * image_height);
+    std::vector<std::thread> threads;
+    for (auto patch : patches) {
+        threads.emplace_back([&, this, patch = std::move(patch)]() mutable {
+            for (auto [x, y] : patch) {
+                glm::vec3 accumulated(0);
+                glm::vec3 basis = matrix_origin
+                                  + static_cast<float>(x) * delta_u
+                                  + static_cast<float>(y) * delta_v;
 
-                    for (auto _ : std::views::iota(0u, pixel_samples)) {
-                        auto [r1, r2]  = Sampler::sample<2>();
-                        glm::vec3 cast = basis + r1 * delta_u + r2 * delta_v;
-                        Ray ray(position, glm::normalize(cast - position));
+                for (auto _ : std::views::iota(0u, pixel_samples)) {
+                    auto [r1, r2]  = Sampler::sample<2>();
+                    glm::vec3 cast = basis + r1 * delta_u + r2 * delta_v;
+                    Ray       ray(position, glm::normalize(cast - position));
 
-                        accumulated += trace(ray, scene);
-                        Sampler::step();
-                    }
-
-                    accumulated /= static_cast<float>(pixel_samples);
-                    pixels[y * image_width + x] += accumulated;
+                    accumulated += trace(ray, scene);
+                    Sampler::step();
                 }
-            });
-        }
+
+                accumulated /= static_cast<float>(pixel_samples);
+                pixels[y * image_width + x] += accumulated;
+            }
+        });
+    }
+
+    for (auto &thread : threads) {
+        thread.join();
     }
 
     output(pixels);

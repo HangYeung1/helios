@@ -26,12 +26,22 @@ void hls::Camera::render(const Scene &scene) const {
                               + true_up * viewport_height * 0.5f;
 
     // Create render patches
-    auto x_chunks = std::views::iota(0u, image_width) | std::views::chunk(256);
-    auto y_chunks = std::views::iota(0u, image_height) | std::views::chunk(256);
+    auto chunk = [](unsigned int max, unsigned int chunk_size) {
+        return std::views::iota(0u, (max + chunk_size - 1) / chunk_size)
+               | std::views::transform([=](std::size_t i) {
+                     unsigned int begin = i * chunk_size;
+                     unsigned int end   = std::min(begin + chunk_size, max);
+                     return std::views::iota(begin, end);
+                 });
+    };
+    auto x_chunks = chunk(image_width, 256);
+    auto y_chunks = chunk(image_height, 256);
 
     auto cartesian_product = [](const auto &a, const auto &b) {
-        return b | std::views::transform([=](const auto &b_item) { // row major
-                   return std::views::zip(a, std::views::repeat(b_item));
+        return b | std::views::transform([=](const auto &b_item) {
+                   return a | std::views::transform([=](const auto &a_item) {
+                              return std::make_pair(a_item, b_item);
+                          });
                })
                | std::views::join;
     };

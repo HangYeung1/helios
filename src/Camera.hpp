@@ -37,8 +37,8 @@ class Camera {
     void render(const Scene &scene) const;
 
   private:
-    glm::vec3 trace(Ray &ray, const Scene &scene) const;
-    void      output(const std::vector<glm::vec3> &pixels) const;
+    inline glm::vec3 trace(Ray &ray, const Scene &scene) const;
+    void             output(const std::vector<glm::vec3> &pixels) const;
 
     unsigned int max_bounces;
     unsigned int pixel_samples;

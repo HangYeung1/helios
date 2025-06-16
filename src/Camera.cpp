@@ -84,7 +84,7 @@ void hls::Camera::render(const Scene &scene) const {
     output(pixels);
 }
 
-glm::vec3 hls::Camera::trace(Ray &ray, const Scene &scene) const {
+inline glm::vec3 hls::Camera::trace(Ray &ray, const Scene &scene) const {
     glm::vec3 radiance(0.0f, 0.0f, 0.0f);
     glm::vec3 throughput(1.0f, 1.0f, 1.0f);
 

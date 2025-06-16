@@ -14,8 +14,8 @@ class Sampler {
   public:
     template <std::size_t N>
         requires(N >= 1 && N <= constants::SOBOL_MAX_DIM)
-    static std::conditional_t<N == 1, float, std::array<float, N>> sample() {
-        if (dimension + N > constants::SOBOL_MAX_DIM) {
+    static inline auto sample() {
+        if (dimension + N > constants::SOBOL_MAX_DIM) [[unlikely]] {
             throw std::out_of_range("out of sobol dimensions");
         }
 
@@ -45,7 +45,7 @@ class Sampler {
     }
 
   private:
-    static constexpr inline uint32_t lk_hash(uint32_t x) {
+    static inline uint32_t lk_hash(uint32_t x) {
         x += seed;
         x ^= x * 0x6c50b47cu;
         x ^= x * 0xb82f1e52u;
@@ -54,7 +54,7 @@ class Sampler {
         return x;
     }
 
-    static constexpr inline uint32_t reverse_bits(uint32_t x) {
+    static inline uint32_t reverse_bits(uint32_t x) {
         x = ((x >> 1) & 0x55555555) | ((x << 1) & 0xAAAAAAAA);
         x = ((x >> 2) & 0x33333333) | ((x << 2) & 0xCCCCCCCC);
         x = ((x >> 4) & 0x0F0F0F0F) | ((x << 4) & 0xF0F0F0F0);
@@ -63,7 +63,7 @@ class Sampler {
         return x;
     }
 
-    static constexpr inline uint32_t scramble(uint32_t x) {
+    static inline uint32_t scramble(uint32_t x) {
         x = reverse_bits(x);
         x = lk_hash(x);
         x = reverse_bits(x);

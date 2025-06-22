@@ -8,6 +8,12 @@
 
 namespace hls {
 
+/**
+ * @brief Object in a scene with some geometry and material.
+ *
+ * `Object` is a type agonistic wrapper describing a geometric shape and its
+ * associated material. It provides an interface for fast polymorphism.
+ */
 class Object {
   public:
     Object(Geometry                       &&geometry,
@@ -37,4 +43,5 @@ class Object {
     Geometry                  geometry;
     std::shared_ptr<Material> material;
 };
+
 } // namespace hls

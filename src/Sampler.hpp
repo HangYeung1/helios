@@ -10,6 +10,13 @@
 
 namespace hls {
 
+/**
+ * @brief Scrambled Sobol sequence sampler for randomized quasi-Monte Carlo.
+ *
+ * `Sampler` implements a Sobol sequence with fast Owen scrambling as described
+ * in https://jcgt.org/published/0009/04/01/paper.pdf. It is static for
+ * consistent Sobol dimension mapping and thread-local for concurrency.
+ */
 class Sampler {
   public:
     template <std::size_t N>

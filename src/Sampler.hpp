@@ -5,7 +5,6 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
-#include <ranges>
 #include <stdexcept>
 
 namespace hls {
@@ -19,6 +18,9 @@ namespace hls {
  */
 class Sampler {
   public:
+    explicit Sampler(std::size_t index = 0) noexcept
+        : index(index), dimension(0) {};
+
     template <std::size_t N>
         requires(N >= 1 && N <= constants::SOBOL_MAX_DIM)
     inline auto sample() {
@@ -29,7 +31,7 @@ class Sampler {
         std::array<float, N> result;
         for (auto &sample : result) {
             uint32_t bits = 0;
-            for (auto i : std::views::iota(0u, constants::SOBOL_MAX_BITS)) {
+            for (std::size_t i = 0; i < constants::SOBOL_MAX_BITS; ++i) {
                 if ((index >> i) & 1) {
                     bits ^= constants::SOBOL_DIRECTIONS[dimension][i];
                 }
@@ -77,9 +79,9 @@ class Sampler {
         return x;
     }
 
-    static constexpr uint32_t seed      = 42;
-    std::size_t               index     = 0;
-    std::size_t               dimension = 0;
+    static constexpr uint32_t seed = 42;
+    std::size_t               index;
+    std::size_t               dimension;
 };
 
 } // namespace hls

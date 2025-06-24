@@ -4,10 +4,10 @@
 #include "Sampler.hpp"
 #include "Scene.hpp"
 
+#include <execution>
 #include <glm/vec3.hpp>
+#include <numeric>
 #include <print>
-#include <ranges>
-#include <thread>
 #include <vector>
 
 void hls::Camera::render(const Scene &scene) const {
@@ -25,73 +25,48 @@ void hls::Camera::render(const Scene &scene) const {
                               - right * viewport_width * 0.5f
                               + true_up * viewport_height * 0.5f;
 
-    // Create render patches
-    auto chunk = [](unsigned int max, unsigned int chunk_size) {
-        return std::views::iota(0u, (max + chunk_size - 1) / chunk_size)
-               | std::views::transform([=](std::size_t i) {
-                     unsigned int begin = i * chunk_size;
-                     unsigned int end   = std::min(begin + chunk_size, max);
-                     return std::views::iota(begin, end);
-                 });
-    };
-    auto x_chunks = chunk(image_width, 256);
-    auto y_chunks = chunk(image_height, 256);
+    std::vector<std::size_t> indicies(image_width * image_height);
+    std::iota(indicies.begin(), indicies.end(), 0);
 
-    auto cartesian_product = [](const auto &a, const auto &b) {
-        return b | std::views::transform([=](const auto &b_item) {
-                   return a | std::views::transform([=](const auto &a_item) {
-                              return std::make_pair(a_item, b_item);
-                          });
-               })
-               | std::views::join;
-    };
-    auto patches = cartesian_product(x_chunks, y_chunks)
-                   | std::views::transform([=](const auto &pair) {
-                         auto [x_chunk, y_chunk] = pair;
-                         return cartesian_product(x_chunk, y_chunk);
-                     });
+    std::vector<glm::vec3> pixels(image_width * image_height);
+    std::transform(std::execution::par_unseq,
+                   indicies.begin(),
+                   indicies.end(),
+                   pixels.begin(),
+                   [&, this](std::size_t index) {
+                       Sampler sampler(index * pixel_samples);
 
-    // Render patch per thread
-    std::vector<glm::vec3>   pixels(image_width * image_height);
-    std::vector<std::thread> threads;
-    for (auto patch : patches) {
-        threads.emplace_back([&, this, patch = std::move(patch)]() mutable {
-            Sampler sampler;
-            for (auto [x, y] : patch) {
-                glm::vec3 accumulated(0);
-                glm::vec3 basis = matrix_origin
-                                  + static_cast<float>(x) * delta_u
-                                  + static_cast<float>(y) * delta_v;
+                       std::size_t x = index % image_width;
+                       std::size_t y = index / image_width;
 
-                for (auto _ : std::views::iota(0u, pixel_samples)) {
-                    auto [r1, r2]  = sampler.sample<2>();
-                    glm::vec3 cast = basis + r1 * delta_u + r2 * delta_v;
-                    Ray       ray(position, glm::normalize(cast - position));
+                       glm::vec3 accumulated(0);
+                       glm::vec3 basis = matrix_origin
+                                         + static_cast<float>(x) * delta_u
+                                         + static_cast<float>(y) * delta_v;
 
-                    glm::vec3 radiance(0.0f, 0.0f, 0.0f);
-                    glm::vec3 throughput(1.0f, 1.0f, 1.0f);
+                       for (std::size_t _ = 0; _ < pixel_samples; ++_) {
+                           auto [r1, r2]  = sampler.sample<2>();
+                           glm::vec3 cast = basis + r1 * delta_u + r2 * delta_v;
+                           Ray ray(position, glm::normalize(cast - position));
 
-                    for (auto _ : std::views::iota(0u, max_bounces)) {
-                        bool success =
-                            scene.interact(ray, radiance, throughput, sampler);
-                        if (!success) {
-                            break;
-                        }
-                    }
+                           glm::vec3 radiance(0.0f, 0.0f, 0.0f);
+                           glm::vec3 throughput(1.0f, 1.0f, 1.0f);
 
-                    accumulated += radiance;
-                    sampler.step();
-                }
+                           for (std::size_t _ = 0; _ < max_bounces; ++_) {
+                               bool success = scene.interact(
+                                   ray, radiance, throughput, sampler);
+                               if (!success) {
+                                   break;
+                               }
+                           }
 
-                accumulated /= static_cast<float>(pixel_samples);
-                pixels[y * image_width + x] += accumulated;
-            }
-        });
-    }
+                           accumulated += radiance;
+                           sampler.step();
+                       }
 
-    for (auto &thread : threads) {
-        thread.join();
-    }
+                       accumulated /= static_cast<float>(pixel_samples);
+                       return accumulated;
+                   });
 
     output(pixels);
 }

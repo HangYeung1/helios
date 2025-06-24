@@ -26,9 +26,10 @@ concept is_material = requires(const T   &obj,
                                Ray       &incident,
                                const Ray &normal,
                                glm::vec3 &radiance,
-                               glm::vec3 &throughput) {
+                               glm::vec3 &throughput,
+                               Sampler   &sampler) {
     {
-        obj.scatter(incident, normal, radiance, throughput)
+        obj.scatter(incident, normal, radiance, throughput, sampler)
     } -> std::same_as<bool>;
 };
 

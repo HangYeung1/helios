@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Sampler.hpp"
 #include "geometry/Geometry.hpp"
 #include "material/Material.hpp"
 
@@ -31,10 +32,12 @@ class Object {
     [[nodiscard]] inline bool scatter(Ray       &incident,
                                       const Ray &normal,
                                       glm::vec3 &radiance,
-                                      glm::vec3 &throughput) const {
+                                      glm::vec3 &throughput,
+                                      Sampler   &sampler) const {
         return std::visit(
             [&](const auto &m) {
-                return m.scatter(incident, normal, radiance, throughput);
+                return m.scatter(
+                    incident, normal, radiance, throughput, sampler);
             },
             *material);
     }

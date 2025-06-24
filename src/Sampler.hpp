@@ -21,7 +21,7 @@ class Sampler {
   public:
     template <std::size_t N>
         requires(N >= 1 && N <= constants::SOBOL_MAX_DIM)
-    static inline auto sample() {
+    inline auto sample() {
         if (dimension + N > constants::SOBOL_MAX_DIM) [[unlikely]] {
             throw std::out_of_range("out of sobol dimensions");
         }
@@ -46,7 +46,7 @@ class Sampler {
         }
     }
 
-    static void step() {
+    inline void step() {
         ++index;
         dimension = 0;
     }
@@ -77,9 +77,9 @@ class Sampler {
         return x;
     }
 
-    static constexpr uint32_t              seed      = 42;
-    static thread_local inline std::size_t index     = 0;
-    static thread_local inline std::size_t dimension = 0;
+    static constexpr uint32_t seed      = 42;
+    std::size_t               index     = 0;
+    std::size_t               dimension = 0;
 };
 
 } // namespace hls

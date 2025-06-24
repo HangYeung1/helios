@@ -15,15 +15,16 @@ class NaiveDiffuse {
     explicit NaiveDiffuse(glm::vec3 &&albedo) noexcept
         : albedo(std::move(albedo)) {};
 
-    [[nodiscard]] bool scatter(Ray                        &incident,
-                               const Ray                  &normal,
-                               [[maybe_unused]] glm::vec3 &radiance,
-                               glm::vec3                  &throughput) const {
+    [[nodiscard]] inline bool scatter(Ray                        &incident,
+                                      const Ray                  &normal,
+                                      [[maybe_unused]] glm::vec3 &radiance,
+                                      glm::vec3                  &throughput,
+                                      Sampler &sampler) const {
         // Surface Albedo
         throughput *= albedo;
 
         // Naive diffuse
-        auto [r1, r2]   = Sampler::sample<2>();
+        auto [r1, r2]   = sampler.sample<2>();
         float     phi   = r1 * 2.0f * std::numbers::pi_v<float>;
         float     theta = r2 * std::numbers::pi_v<float>;
         glm::vec3 direction(std::sin(theta) * std::cos(phi),

@@ -23,7 +23,8 @@ class Scene {
 
     [[nodiscard]] bool interact(Ray       &incident,
                                 glm::vec3 &radiance,
-                                glm::vec3 &throughput) const {
+                                glm::vec3 &throughput,
+                                Sampler   &sampler) const {
         std::optional<std::pair<const Object *, Ray>> closest;
         float closest_dist = std::numeric_limits<float>::max();
 
@@ -43,7 +44,7 @@ class Scene {
         }
 
         const auto &[object, normal] = *closest;
-        return object->scatter(incident, normal, radiance, throughput);
+        return object->scatter(incident, normal, radiance, throughput, sampler);
     }
 
   private:

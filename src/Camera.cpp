@@ -56,6 +56,7 @@ void hls::Camera::render(const Scene &scene) const {
     std::vector<std::thread> threads;
     for (auto patch : patches) {
         threads.emplace_back([&, this, patch = std::move(patch)]() mutable {
+            Sampler sampler;
             for (auto [x, y] : patch) {
                 glm::vec3 accumulated(0);
                 glm::vec3 basis = matrix_origin
@@ -63,12 +64,23 @@ void hls::Camera::render(const Scene &scene) const {
                                   + static_cast<float>(y) * delta_v;
 
                 for (auto _ : std::views::iota(0u, pixel_samples)) {
-                    auto [r1, r2]  = Sampler::sample<2>();
+                    auto [r1, r2]  = sampler.sample<2>();
                     glm::vec3 cast = basis + r1 * delta_u + r2 * delta_v;
                     Ray       ray(position, glm::normalize(cast - position));
 
-                    accumulated += trace(ray, scene);
-                    Sampler::step();
+                    glm::vec3 radiance(0.0f, 0.0f, 0.0f);
+                    glm::vec3 throughput(1.0f, 1.0f, 1.0f);
+
+                    for (auto _ : std::views::iota(0u, max_bounces)) {
+                        bool success =
+                            scene.interact(ray, radiance, throughput, sampler);
+                        if (!success) {
+                            break;
+                        }
+                    }
+
+                    accumulated += radiance;
+                    sampler.step();
                 }
 
                 accumulated /= static_cast<float>(pixel_samples);
@@ -82,20 +94,6 @@ void hls::Camera::render(const Scene &scene) const {
     }
 
     output(pixels);
-}
-
-inline glm::vec3 hls::Camera::trace(Ray &ray, const Scene &scene) const {
-    glm::vec3 radiance(0.0f, 0.0f, 0.0f);
-    glm::vec3 throughput(1.0f, 1.0f, 1.0f);
-
-    for (auto _ : std::views::iota(0u, max_bounces)) {
-        bool success = scene.interact(ray, radiance, throughput);
-        if (!success) {
-            break;
-        }
-    }
-
-    return radiance;
 }
 
 void hls::Camera::output(const std::vector<glm::vec3> &pixels) const {

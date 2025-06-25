@@ -5,9 +5,9 @@
 #include "Scene.hpp"
 
 #include <execution>
+#include <fstream>
 #include <glm/vec3.hpp>
 #include <numeric>
-#include <print>
 #include <ranges>
 #include <vector>
 
@@ -28,17 +28,16 @@ void hls::Camera::render(const Scene &scene) const {
 
     // Render
     auto pixel_indicies = std::views::iota(0u, image_width * image_height);
-    std::vector<glm::vec3> pixels(image_width * image_height);
+    std::vector<glm::u8vec3> pixels(image_width * image_height);
     std::transform(
         std::execution::par_unseq,
         pixel_indicies.begin(),
         pixel_indicies.end(),
         pixels.begin(),
         [&, this](std::size_t pixel_index) {
-            std::size_t x = pixel_index % image_width;
-            std::size_t y = pixel_index / image_width;
-
-            glm::vec3 basis = matrix_origin + static_cast<float>(x) * delta_u
+            std::size_t x     = pixel_index % image_width;
+            std::size_t y     = pixel_index / image_width;
+            glm::vec3   basis = matrix_origin + static_cast<float>(x) * delta_u
                               + static_cast<float>(y) * delta_v;
 
             auto      sample_indicies = std::views::iota(0u, pixel_samples);
@@ -68,25 +67,20 @@ void hls::Camera::render(const Scene &scene) const {
                     return radiance;
                 });
 
-            accumulated /= static_cast<float>(pixel_samples);
-            return accumulated;
+            glm::vec3   norm  = accumulated / static_cast<float>(pixel_samples);
+            glm::vec3   map   = norm / (norm + 1.0f);
+            glm::vec3   gamma = glm::pow(map, glm::vec3(1.0f / 2.2f));
+            glm::u8vec3 quant = glm::round(gamma * 255.00f);
+
+            return quant;
         });
 
     output(pixels);
 }
 
-void hls::Camera::output(const std::vector<glm::vec3> &pixels) const {
-    std::print("P3 {} {} 255 ", image_width, image_height);
-    for (const glm::vec3 &pixel : pixels) {
-        // Reinhard tonemapping
-        glm::vec3 tone_mapped = pixel / (pixel + 1.0f);
-
-        // Gamma 2.2 correction
-        glm::vec3 gamma_corrected =
-            glm::pow(tone_mapped, glm::vec3(1.0f / 2.2f));
-
-        // Quantize
-        glm::uvec3 rgb = glm::round(gamma_corrected * 255.00f);
-        std::print("{} {} {} ", rgb[0], rgb[1], rgb[2]);
-    }
+void hls::Camera::output(const std::vector<glm::u8vec3> &pixels) const {
+    std::ofstream file("image.ppm", std::ios::binary);
+    file << "P6 " << image_width << " " << image_height << " 255\n";
+    file.write(reinterpret_cast<const char *>(pixels.data()),
+               pixels.size() * sizeof(glm::u8vec3));
 }

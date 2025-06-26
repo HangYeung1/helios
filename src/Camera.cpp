@@ -34,10 +34,10 @@ void hls::Camera::render(const Scene &scene) const {
         pixel_indicies.begin(),
         pixel_indicies.end(),
         pixels.begin(),
-        [&, this](std::size_t pixel_index) {
-            std::size_t x     = pixel_index % image_width;
-            std::size_t y     = pixel_index / image_width;
-            glm::vec3   basis = matrix_origin + static_cast<float>(x) * delta_u
+        [&, this](unsigned int pixel_index) {
+            unsigned int x     = pixel_index % image_width;
+            unsigned int y     = pixel_index / image_width;
+            glm::vec3    basis = matrix_origin + static_cast<float>(x) * delta_u
                               + static_cast<float>(y) * delta_v;
 
             auto      sample_indicies = std::views::iota(0u, pixel_samples);
@@ -47,7 +47,7 @@ void hls::Camera::render(const Scene &scene) const {
                 sample_indicies.end(),
                 glm::vec3(0.0f),
                 std::plus<glm::vec3>(),
-                [&, this](std::size_t sample_index) {
+                [&, this](unsigned int sample_index) {
                     Sampler sampler(pixel_index * pixel_samples + sample_index);
                     auto [r1, r2]  = sampler.sample<2>();
                     glm::vec3 cast = basis + r1 * delta_u + r2 * delta_v;
@@ -56,7 +56,7 @@ void hls::Camera::render(const Scene &scene) const {
                     glm::vec3 radiance(0.0f);
                     glm::vec3 throughput(1.0f);
 
-                    for (std::size_t _ = 0; _ < max_bounces; ++_) {
+                    for (unsigned int _ = 0; _ < max_bounces; ++_) {
                         bool success =
                             scene.interact(ray, radiance, throughput, sampler);
                         if (!success) {

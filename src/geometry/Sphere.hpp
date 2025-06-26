@@ -11,11 +11,8 @@ namespace hls {
 
 class Sphere {
   public:
-    Sphere(const glm::vec3 &center, float radius) noexcept
-        : center(center), radius(radius) {};
-
-    Sphere(glm::vec3 &&center, float radius) noexcept
-        : center(std::move(center)), radius(radius) {};
+    Sphere(glm::vec3 &&center, float &&radius) noexcept
+        : center(std::move(center)), radius(std::move(radius)) {};
 
     std::optional<Ray> hit(const Ray &ray) const {
         glm::vec3 oc = ray.origin - center;

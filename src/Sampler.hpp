@@ -17,10 +17,10 @@ namespace hls {
  */
 class Sampler {
   public:
-    explicit Sampler(std::size_t index) noexcept
+    explicit Sampler(unsigned int index) noexcept
         : index(index), dimension(0) {};
 
-    template <std::size_t N>
+    template <unsigned int N>
         requires(N >= 1 && N <= constants::SOBOL_MAX_DIM)
     inline auto sample() {
         if (dimension + N > constants::SOBOL_MAX_DIM) [[unlikely]] {
@@ -28,15 +28,15 @@ class Sampler {
         }
 
         std::array<float, N> result;
-        for (auto &sample : result) {
+        for (unsigned int i = 0; i < N; ++i) {
             uint32_t bits = 0;
-            for (std::size_t i = 0; i < constants::SOBOL_MAX_BITS; ++i) {
-                if ((index >> i) & 1) {
-                    bits ^= constants::SOBOL_DIRECTIONS[dimension][i];
+            for (unsigned int j = 0; j < constants::SOBOL_MAX_BITS; ++j) {
+                if ((index >> j) & 1) {
+                    bits ^= constants::SOBOL_DIRECTIONS[dimension][j];
                 }
             }
-            bits   = scramble(bits);
-            sample = static_cast<float>(bits) / std::pow(2.0f, 32.0f);
+            bits      = scramble(bits);
+            result[i] = static_cast<float>(bits) / std::pow(2.0f, 32.0f);
             ++dimension;
         }
 
@@ -74,8 +74,8 @@ class Sampler {
     }
 
     static constexpr uint32_t seed = 42;
-    std::size_t               index;
-    std::size_t               dimension;
+    unsigned int              index;
+    unsigned int              dimension;
 };
 
 } // namespace hls

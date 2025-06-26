@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Sphere.hpp"
+#include "Triangle.hpp"
 
 #include <concepts>
 #include <optional>
@@ -11,7 +12,7 @@ namespace hls {
 /**
  * @brief Variant representing all geometric types in a scene.
  */
-using Geometry = std::variant<Sphere>;
+using Geometry = std::variant<Sphere, Triangle>;
 
 /**
  * @brief Interface for geometric objects in a scene.

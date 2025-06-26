@@ -15,6 +15,7 @@ class Sphere {
         : center(std::move(center)), radius(std::move(radius)) {};
 
     std::optional<Ray> hit(const Ray &ray) const {
+        // Calculate quadratic parameters
         glm::vec3 oc = ray.origin - center;
 
         float a = glm::dot(ray.direction, ray.direction);
@@ -37,7 +38,6 @@ class Sphere {
 
         glm::vec3 point  = ray.at(t);
         glm::vec3 normal = glm::normalize(point - center);
-
         if (glm::dot(ray.direction, normal) >= 0.0f) {
             normal = -normal;
         }

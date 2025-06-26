@@ -18,15 +18,27 @@ int main() {
 
     hls::Scene scene;
     scene.add(hls::Sphere(glm::vec3(0.0f, 16.0f, 0.0f), 16.0f), light_gray);
-    scene.add(hls::Sphere(glm::vec3(0.0f, -1e5f, 0.0f), 1e5f), dark_gray);
+    scene.add(hls::Triangle(glm::vec3(-1e5f, 0.0f, 1e5f),
+                            glm::vec3(1e5f, 0.0f, 1e5f),
+                            glm::vec3(-1e5f, 0.0f, -1e5f)),
+              dark_gray);
+    scene.add(hls::Triangle(glm::vec3(1e5f, 0.0f, -1e5f),
+                            glm::vec3(-1e5f, 0.0f, -1e5f),
+                            glm::vec3(1e5f, 0.0f, 1e5f)),
+              dark_gray);
+
     scene.add(hls::Sphere(glm::vec3(0.0f, 250.0f, 0.0f), 50.0f), white_light);
     scene.add(hls::Sphere(glm::vec3(-20.0f, 4.0f, 3.0f), 4.0f), red_light);
     scene.add(hls::Sphere(glm::vec3(20.0f, 4.0f, 3.0f), 4.0f), blue_light);
+    scene.add(hls::Triangle(glm::vec3(-8.0f, 0.0f, 16.0f),
+                            glm::vec3(8.0f, 0.0f, 16.0f),
+                            glm::vec3(0.0f, 8.0f, 16.0f)),
+              white_light);
 
     hls::Camera camera({.max_bounces     = 16u,
                         .pixel_samples   = 256u,
-                        .image_width     = 1024u,
-                        .image_height    = 1024u,
+                        .image_width     = 512u,
+                        .image_height    = 512u,
                         .viewport_width  = 4.0f,
                         .viewport_height = 4.0f,
                         .focal_length    = 4.0f,

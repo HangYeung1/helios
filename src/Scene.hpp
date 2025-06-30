@@ -12,20 +12,60 @@ namespace hls {
 
 class Scene {
   public:
-    inline void add(Object &&object) {
-        objects.push_back(std::move(object));
-    }
-
     template <typename... Args>
     inline void add(Args &&...args) {
         objects.emplace_back(std::forward<Args>(args)...);
+        if (objects.back().bounce_type() == BounceType::Emissive) {
+            lights.push_back(objects.size() - 1);
+        }
     }
 
-    [[nodiscard]] bool interact(Ray       &incident,
-                                glm::vec3 &radiance,
-                                glm::vec3 &throughput,
-                                Sampler   &sampler) const {
-        std::optional<std::pair<const Object *, Ray>> closest;
+    BounceType bounce(Ray       &incident,
+                      glm::vec3 &radiance,
+                      glm::vec3 &throughput,
+                      Sampler   &sampler) const {
+        std::optional<Intersection> intersection = intersect(incident);
+        if (!intersection) {
+            return BounceType::Emissive;
+        }
+
+        const auto &[object, normal] = *intersection;
+        return object->scatter(incident, normal, radiance, throughput, sampler);
+    }
+
+    std::optional<glm::vec3> sample_indirect(const Ray &incident,
+                                             glm::vec3  radiance,
+                                             glm::vec3  throughput,
+                                             Sampler   &sampler) const {
+        float       rand  = sampler.sample<1>();
+        std::size_t index = std::min(
+            static_cast<std::size_t>(rand * lights.size()), lights.size() - 1);
+        const Object &light = objects[lights[index]];
+
+        glm::vec3 point = light.sample_point(sampler);
+        Ray       ray(incident.origin, glm::normalize(point - incident.origin));
+        if (glm::dot(ray.direction, incident.direction) < 0.0f) {
+            return std::nullopt;
+        }
+
+        auto intersection = intersect(ray);
+        if (!intersection || intersection->object != &light) {
+            return std::nullopt;
+        }
+
+        const auto &[object, normal] = *intersection;
+        object->scatter(ray, normal, radiance, throughput, sampler);
+        return radiance;
+    }
+
+  private:
+    struct Intersection {
+        const Object *object;
+        Ray           normal;
+    };
+
+    std::optional<Intersection> intersect(const Ray &incident) const {
+        std::optional<Intersection> closest;
         float closest_dist = std::numeric_limits<float>::max();
 
         for (const auto &object : objects) {
@@ -33,22 +73,18 @@ class Scene {
             if (normal) {
                 float dist = glm::length(normal->origin - incident.origin);
                 if (dist < closest_dist) {
-                    closest      = std::make_pair(&object, std::move(*normal));
+                    closest      = Intersection{.object = &object,
+                                                .normal = std::move(*normal)};
                     closest_dist = dist;
                 }
             }
         }
 
-        if (!closest) {
-            return false;
-        }
-
-        const auto &[object, normal] = *closest;
-        return object->scatter(incident, normal, radiance, throughput, sampler);
+        return closest;
     }
 
-  private:
-    std::vector<Object> objects;
+    std::vector<Object>      objects;
+    std::vector<std::size_t> lights;
 };
 
 } // namespace hls

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glm/vec3.hpp>
-
 #include <utility>
 
 namespace hls {

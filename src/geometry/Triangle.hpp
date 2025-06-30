@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Ray.hpp"
+#include "../Sampler.hpp"
 
 #include <algorithm>
 #include <array>
@@ -74,7 +75,7 @@ class Triangle {
             return std::nullopt;
         }
 
-        // Caculate intersection parameter
+        // Calculate intersection parameter
         float det = U + V + W;
         if (det == 0.0f) {
             return std::nullopt;
@@ -90,6 +91,16 @@ class Triangle {
         }
         return Ray(ray.at(T / det),
                    glm::dot(ray.direction, normal) >= 0.0f ? -normal : normal);
+    }
+
+    glm::vec3 sample_point(Sampler &sampler) const {
+        auto [r1, r2] = sampler.sample<2>();
+        float u       = std::sqrt(r1);
+        float v       = r2;
+
+        return (1.0f - u) * vertices[0]       //
+               + u * (1.0f - v) * vertices[1] //
+               + u * v * vertices[2];         //
     }
 
   private:

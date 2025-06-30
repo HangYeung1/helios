@@ -21,6 +21,7 @@ class Object {
            const std::shared_ptr<Material> &material) noexcept
         : geometry(std::move(geometry)), material(material) {};
 
+    // Geometry interface
     inline std::optional<Ray> hit(const Ray &ray) const {
         return std::visit(
             [&](const auto &g) {
@@ -29,11 +30,28 @@ class Object {
             geometry);
     }
 
-    inline bool scatter(Ray       &incident,
-                        const Ray &normal,
-                        glm::vec3 &radiance,
-                        glm::vec3 &throughput,
-                        Sampler   &sampler) const {
+    inline glm::vec3 sample_point(Sampler &sampler) const {
+        return std::visit(
+            [&](const auto &g) {
+                return g.sample_point(sampler);
+            },
+            geometry);
+    }
+
+    inline BounceType bounce_type() const {
+        return std::visit(
+            [&](const auto &m) {
+                return m.bounce_type();
+            },
+            *material);
+    }
+
+    // Scatter interface
+    inline BounceType scatter(Ray       &incident,
+                              const Ray &normal,
+                              glm::vec3 &radiance,
+                              glm::vec3 &throughput,
+                              Sampler   &sampler) const {
         return std::visit(
             [&](const auto &m) {
                 return m.scatter(

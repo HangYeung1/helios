@@ -56,15 +56,37 @@ void hls::Camera::render(const Scene &scene) const {
                     glm::vec3 radiance(0.0f);
                     glm::vec3 throughput(1.0f);
 
+                    glm::vec3    total_radiance(0.0f);
+                    unsigned int radiance_samples = 1;
+
                     for (unsigned int _ = 0; _ < max_bounces; ++_) {
-                        bool success =
-                            scene.interact(ray, radiance, throughput, sampler);
-                        if (!success) {
+                        BounceType bounce_type =
+                            scene.bounce(ray, radiance, throughput, sampler);
+
+                        switch (bounce_type) {
+                        case BounceType::Diffuse:
+                        case BounceType::Refactive: {
+                            std::optional<glm::vec3> estimate =
+                                scene.sample_indirect(
+                                    ray, radiance, throughput, sampler);
+                            if (estimate) {
+                                total_radiance += *estimate;
+                                ++radiance_samples;
+                            }
                             break;
+                        }
+                        case BounceType::Specular:
+                            break;
+                        case BounceType::Emissive:
+                            total_radiance += radiance;
+                            return total_radiance
+                                   / static_cast<float>(radiance_samples);
                         }
                     }
 
-                    return radiance;
+                    total_radiance += radiance;
+                    return total_radiance
+                           / static_cast<float>(radiance_samples);
                 });
 
             glm::vec3   norm  = accumulated / static_cast<float>(pixel_samples);

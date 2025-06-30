@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Sampler.hpp"
 #include "Sphere.hpp"
 #include "Triangle.hpp"
 
@@ -22,8 +23,9 @@ using Geometry = std::variant<Sphere, Triangle>;
  * normal `Ray` if an intersection occurs, and `std::nullopt` otherwise.
  */
 template <typename T>
-concept is_geometry = requires(const T &obj, const Ray &ray) {
+concept is_geometry = requires(const T &obj, const Ray &ray, Sampler &sampler) {
     { obj.hit(ray) } -> std::same_as<std::optional<Ray>>;
+    { obj.sample_point(sampler) } -> std::same_as<glm::vec3>;
 };
 
 /**

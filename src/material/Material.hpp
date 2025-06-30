@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BounceType.hpp"
 #include "NaiveDiffuse.hpp"
 #include "PureEmissive.hpp"
 
@@ -30,7 +31,8 @@ concept is_material = requires(const T   &obj,
                                Sampler   &sampler) {
     {
         obj.scatter(incident, normal, radiance, throughput, sampler)
-    } -> std::same_as<bool>;
+    } -> std::same_as<BounceType>;
+    { obj.bounce_type() } -> std::same_as<BounceType>;
 };
 
 /**

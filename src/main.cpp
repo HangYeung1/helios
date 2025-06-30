@@ -36,7 +36,7 @@ int main() {
               white_light);
 
     hls::Camera camera({.max_bounces     = 16u,
-                        .pixel_samples   = 256u,
+                        .pixel_samples   = 64u,
                         .image_width     = 512u,
                         .image_height    = 512u,
                         .viewport_width  = 4.0f,

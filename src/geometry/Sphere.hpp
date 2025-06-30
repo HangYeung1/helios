@@ -1,10 +1,12 @@
 #pragma once
 
 #include "../Ray.hpp"
+#include "../Sampler.hpp"
 
 #include <cmath>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
+#include <numbers>
 #include <optional>
 
 namespace hls {
@@ -43,6 +45,18 @@ class Sphere {
         }
 
         return Ray(point + EPSILON * normal, std::move(normal));
+    }
+
+    glm::vec3 sample_point(Sampler &sampler) const {
+        auto [r1, r2] = sampler.sample<2>();
+        float theta   = r1 * 2.0f * std::numbers::pi_v<float>;
+        float phi     = r2 * std::numbers::pi_v<float>;
+
+        float x = radius * std::sin(phi) * std::cos(theta);
+        float y = radius * std::sin(phi) * std::sin(theta);
+        float z = radius * std::cos(phi);
+
+        return center + glm::vec3(x, y, z);
     }
 
   private:

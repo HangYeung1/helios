@@ -2,6 +2,7 @@
 
 #include "../Ray.hpp"
 #include "../Sampler.hpp"
+#include "BounceType.hpp"
 
 #include <cmath>
 #include <glm/geometric.hpp>
@@ -15,11 +16,11 @@ class NaiveDiffuse {
     explicit NaiveDiffuse(glm::vec3 &&albedo) noexcept
         : albedo(std::move(albedo)) {};
 
-    inline bool scatter(Ray                        &incident,
-                        const Ray                  &normal,
-                        [[maybe_unused]] glm::vec3 &radiance,
-                        glm::vec3                  &throughput,
-                        Sampler                    &sampler) const {
+    inline BounceType scatter(Ray                        &incident,
+                              const Ray                  &normal,
+                              [[maybe_unused]] glm::vec3 &radiance,
+                              glm::vec3                  &throughput,
+                              Sampler                    &sampler) const {
         // Surface Albedo
         throughput *= albedo;
 
@@ -36,7 +37,11 @@ class NaiveDiffuse {
         }
 
         incident = Ray(normal.origin, direction);
-        return true;
+        return bounce_type();
+    }
+
+    constexpr inline BounceType bounce_type() const {
+        return BounceType::Diffuse;
     }
 
   private:

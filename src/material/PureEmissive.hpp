@@ -16,7 +16,7 @@ class PureEmissive {
                               glm::vec3                  &radiance,
                               glm::vec3                  &throughput,
                               [[maybe_unused]] Sampler   &sampler) const {
-        radiance = luminance * throughput;
+        radiance += luminance * throughput;
         return bounce_type();
     }
 

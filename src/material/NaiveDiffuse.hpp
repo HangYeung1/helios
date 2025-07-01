@@ -21,9 +21,6 @@ class NaiveDiffuse {
                               [[maybe_unused]] glm::vec3 &radiance,
                               glm::vec3                  &throughput,
                               Sampler                    &sampler) const {
-        // Surface Albedo
-        throughput *= albedo;
-
         // Naive diffuse
         auto [r1, r2]   = sampler.sample<2>();
         float     phi   = r1 * 2.0f * std::numbers::pi_v<float>;
@@ -37,6 +34,12 @@ class NaiveDiffuse {
         }
 
         incident = Ray(normal.origin, direction);
+
+        // Surface Albedo
+        float           cos_theta = glm::dot(direction, normal.direction);
+        constexpr float pdf       = 1.0f / (2.0f * std::numbers::pi_v<float>);
+        throughput *= cos_theta * albedo / pdf;
+
         return bounce_type();
     }
 

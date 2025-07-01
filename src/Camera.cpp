@@ -66,11 +66,11 @@ void hls::Camera::render(const Scene &scene) const {
                         switch (bounce_type) {
                         case BounceType::Diffuse:
                         case BounceType::Refactive: {
-                            std::optional<glm::vec3> estimate =
+                            std::optional<glm::vec3> indirect =
                                 scene.sample_indirect(
                                     ray, radiance, throughput, sampler);
-                            if (estimate) {
-                                total_radiance += *estimate;
+                            if (indirect) {
+                                total_radiance += *indirect;
                                 ++radiance_samples;
                             }
                             break;

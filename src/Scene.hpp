@@ -55,7 +55,16 @@ class Scene {
 
         const auto &[object, normal] = *intersection;
         object->scatter(ray, normal, radiance, throughput, sampler);
-        return radiance;
+
+        glm::vec3 light_dir      = point - incident.origin;
+        glm::vec3 light_dir_norm = glm::normalize(light_dir);
+
+        float cos_theta_i   = glm::dot(incident.direction, light_dir_norm);
+        float cos_theta_l   = glm::dot(normal.direction, -light_dir_norm);
+        float dist_squared  = glm::dot(light_dir, light_dir);
+        float geometry_term = (cos_theta_i * cos_theta_l) / dist_squared;
+
+        return radiance * geometry_term;
     }
 
   private:

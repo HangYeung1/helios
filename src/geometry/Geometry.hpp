@@ -11,25 +11,35 @@
 namespace hls {
 
 /**
- * @brief Variant representing all geometric types in a scene.
+ * @brief A variant representing all geometric types in a scene.
  */
 using Geometry = std::variant<Sphere, Triangle>;
 
 /**
- * @brief Interface for geometric objects in a scene.
- *
- * A type `T` satisfies `is_geometry` if it provides a `hit` function that
- * determines the intersection normal of a ray. It must return the surface
- * normal `Ray` if an intersection occurs, and `std::nullopt` otherwise.
+ * @brief The interface for geometric objects in a scene.
+ * @details See the requirements below for details.
  */
 template <typename T>
-concept is_geometry = requires(const T &obj, const Ray &ray, Sampler &sampler) {
-    { obj.hit(ray) } -> std::same_as<std::optional<Ray>>;
-    { obj.sample_point(sampler) } -> std::same_as<glm::vec3>;
-};
+concept is_geometry =
+    /**
+     * @brief Determine the intersection normal `Ray`.
+     * @param ray to test for intersection.
+     * @return the surface normal `Ray` or `std::nullopt`.
+     */
+    requires(const T &obj, const Ray &ray) {
+        { obj.hit(ray) } -> std::same_as<std::optional<Ray>>;
+    } &&
+    /**
+     * @brief Sample a point on the surface of the object.
+     * @param sampler the rng to use.
+     * @return the sampled point `glm::vec3`.
+     */
+    requires(const T &obj, Sampler &sampler) {
+        { obj.sample_point(sampler) } -> std::same_as<glm::vec3>;
+    };
 
 /**
- * @brief Utility to verify all types in a variant satisfies `is_geometry`.
+ * @brief A utility to verify all types in a variant satisfies `is_geometry`.
  */
 template <typename T>
 constexpr inline bool geometry_variant = false;

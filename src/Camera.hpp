@@ -6,8 +6,14 @@
 
 namespace hls {
 
+/**
+ * @brief A camera that renders a scene.
+ */
 class Camera {
   public:
+    /**
+     * @brief Configuration POD for the camera.
+     */
     struct Config {
         unsigned int max_bounces;
         unsigned int pixel_samples;
@@ -21,6 +27,9 @@ class Camera {
         glm::vec3    up;
     };
 
+    /**
+     * @brief Construct a camera with the given configuration.
+     */
     Camera(Config &&config) noexcept
         : max_bounces(std::move(config.max_bounces)),
           pixel_samples(std::move(config.pixel_samples)),
@@ -33,9 +42,17 @@ class Camera {
           target(std::move(config.target)),
           up(std::move(config.up)) {};
 
+    /**
+     * @brief Render the scene from the camera's perspective.
+     * @param scene the scene to render.
+     */
     void render(const Scene &scene) const;
 
   private:
+    /**
+     * @brief Write the rendered image to a PPM P6 file.
+     * @param pixels the pixel data.
+     */
     void output(const std::vector<glm::u8vec3> &pixels) const;
 
     unsigned int max_bounces;

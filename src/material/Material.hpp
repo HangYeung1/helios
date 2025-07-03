@@ -10,33 +10,47 @@
 namespace hls {
 
 /**
- * @brief Variant representing all material types in a scene.
+ * @brief A variant representing all material types in a scene.
  */
 using Material = std::variant<NaiveDiffuse, PureEmissive>;
 
 /**
- * @brief Interface for materials in a scene.
- *
- * A type `T` satisfies `is_material` if it provides a `scatter` function that
- * determines the scattering behavior of a ray at a surface normal. It may
- * contribute side effects on `radiance` and `throughput` and must return `true`
- * if scattering continues, and `false` otherwise.
+ * @brief The interface for materials in a scene.
+ * @details See the requirements below for details.
  */
 template <typename T>
-concept is_material = requires(const T   &obj,
-                               Ray       &incident,
-                               const Ray &normal,
-                               glm::vec3 &radiance,
-                               glm::vec3 &throughput,
-                               Sampler   &sampler) {
-    {
-        obj.scatter(incident, normal, radiance, throughput, sampler)
-    } -> std::same_as<BounceType>;
-    { obj.bounce_type() } -> std::same_as<BounceType>;
-};
+concept is_material =
+    /**
+     * @brief Scatter a ray at a surface normal.
+     * @param ray the ray to scatter.
+     * @param normal the surface normal ray.
+     * @param radiance the radiance to contribute to.
+     * @param throughput the throughput to contribute to.
+     * @param sampler the sampler to use for sampling.
+     * @return the type of bounce that occurs.
+     * @note This function has side effects on `radiance` and `throughput`.
+     */
+    requires(const T   &obj,
+             Ray       &ray,
+             const Ray &normal,
+             glm::vec3 &radiance,
+             glm::vec3 &throughput,
+             Sampler   &sampler) {
+        {
+            obj.scatter(ray, normal, radiance, throughput, sampler)
+        } -> std::same_as<BounceType>;
+    }
+    &&
+    /**
+     * @brief Get the bounce type of the material.
+     * @return the bounce type of the material.
+     */
+    requires(const T &obj) {
+        { obj.bounce_type() } -> std::same_as<BounceType>;
+    };
 
 /**
- * @brief Utility to verify all types in a variant satisfies `is_material`.
+ * @brief A utility to verify all types in a variant satisfies `is_material`.
  */
 template <typename T>
 constexpr inline bool material_variant = false;

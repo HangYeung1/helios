@@ -10,13 +10,24 @@
 
 namespace hls {
 
+/**
+ * @brief A triangle defined by its three vertices.
+ */
 class Triangle {
   public:
+    /**
+     * @brief Construct a triangle with the given vertices.
+     */
     Triangle(glm::vec3 &&v1, glm::vec3 &&v2, glm::vec3 &&v3) noexcept
         : vertices({std::move(v1), std::move(v2), std::move(v3)}),
           normal(glm::normalize(glm::cross(v2 - v1, v3 - v1))) {};
 
-    // https://jcgt.org/published/0002/01/05/paper.pdf
+    /**
+     * @brief Determine the intersection normal `Ray`.
+     * @details https://jcgt.org/published/0002/01/05/paper.pdf.
+     * @param ray to test for intersection.
+     * @return the surface normal `Ray` or `std::nullopt`.
+     */
     std::optional<Ray> hit(const Ray &ray) const {
         // Transform vertices
         unsigned int kz      = 0;
@@ -93,7 +104,13 @@ class Triangle {
                    glm::dot(ray.direction, normal) >= 0.0f ? -normal : normal);
     }
 
+    /**
+     * @brief Sample a point on the surface of the triangle.
+     * @param sampler the rng to use.
+     * @return the sampled point `glm::vec3`.
+     */
     glm::vec3 sample_point(Sampler &sampler) const {
+        // Random barycentric coordinates
         auto [r1, r2] = sampler.sample<2>();
         float u       = std::sqrt(r1);
         float v       = r2;

@@ -10,8 +10,15 @@
 
 namespace hls {
 
+/**
+ * @brief A scene containing objects that can be rendered.
+ */
 class Scene {
   public:
+    /**
+     * @brief Add an object to the scene.
+     * @param args the arguments to construct the object.
+     */
     template <typename... Args>
     inline void add(Args &&...args) {
         objects.emplace_back(std::forward<Args>(args)...);
@@ -20,23 +27,40 @@ class Scene {
         }
     }
 
-    BounceType bounce(Ray       &incident,
+    /**
+     * @brief Bounce a ray in the scene.
+     * @param ray the ray to bounce.
+     * @param radiance the radiance of the ray.
+     * @param throughput the throughput of the ray.
+     * @param sampler the sampler to use for random sampling.
+     * @return the type of bounce that occurred.
+     */
+    BounceType bounce(Ray       &ray,
                       glm::vec3 &radiance,
                       glm::vec3 &throughput,
                       Sampler   &sampler) const {
-        std::optional<Intersection> intersection = intersect(incident);
+        std::optional<Intersection> intersection = intersect(ray);
         if (!intersection) {
             return BounceType::Emissive;
         }
 
         const auto &[object, normal] = *intersection;
-        return object->scatter(incident, normal, radiance, throughput, sampler);
+        return object->scatter(ray, normal, radiance, throughput, sampler);
     }
 
+    /**
+     * @brief Get next event estimation for indirect light sampling.
+     * @param incident the incident ray to estimate from.
+     * @param radiance the radiance of the ray.
+     * @param throughput the throughput of the ray.
+     * @param sampler the sampler to use for random sampling.
+     * @return the sampled indirect light or std::nullopt.
+     */
     std::optional<glm::vec3> sample_indirect(const Ray &incident,
                                              glm::vec3  radiance,
                                              glm::vec3  throughput,
                                              Sampler   &sampler) const {
+        // Get a random point on a random light source
         float       rand  = sampler.sample<1>();
         std::size_t index = std::min(
             static_cast<std::size_t>(rand * lights.size()), lights.size() - 1);
@@ -48,11 +72,13 @@ class Scene {
             return std::nullopt;
         }
 
+        // Check if the ray intersects the light source
         auto intersection = intersect(ray);
         if (!intersection || intersection->object != &light) {
             return std::nullopt;
         }
 
+        // Calculate the radiance contribution from the light source
         const auto &[object, normal] = *intersection;
         object->scatter(ray, normal, radiance, throughput, sampler);
 
@@ -68,11 +94,19 @@ class Scene {
     }
 
   private:
+    /**
+     * @brief A structure representing an intersection of a ray with an object.
+     */
     struct Intersection {
         const Object *object;
         Ray           normal;
     };
 
+    /**
+     * @brief Find the closest intersection of a ray with the scene objects.
+     * @param incident The ray to test for intersection.
+     * @return the closest intersection or std::nullopt.
+     */
     std::optional<Intersection> intersect(const Ray &incident) const {
         std::optional<Intersection> closest;
         float closest_dist = std::numeric_limits<float>::max();

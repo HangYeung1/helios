@@ -26,7 +26,7 @@ void hls::Camera::render(const Scene &scene) const {
                               - right * viewport_width * 0.5f
                               + true_up * viewport_height * 0.5f;
 
-    // Render
+    // Render each pixel
     auto pixel_indicies = std::views::iota(0u, image_width * image_height);
     std::vector<glm::u8vec3> pixels(image_width * image_height);
     std::transform(
@@ -40,6 +40,7 @@ void hls::Camera::render(const Scene &scene) const {
             glm::vec3    basis = matrix_origin + static_cast<float>(x) * delta_u
                               + static_cast<float>(y) * delta_v;
 
+            // Sub-sample the pixel
             auto      sample_indicies = std::views::iota(0u, pixel_samples);
             glm::vec3 accumulated     = std::transform_reduce(
                 std::execution::par_unseq,

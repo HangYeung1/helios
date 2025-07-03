@@ -11,15 +11,21 @@ namespace hls {
 
 /**
  * @brief Scrambled Sobol sequence sampler for randomized quasi-Monte Carlo.
- *
- * `Sampler` implements a Sobol sequence with fast Owen scrambling as described
- * in https://jcgt.org/published/0009/04/01/paper.pdf.
+ * @details https://jcgt.org/published/0009/04/01/paper.pdf.
  */
 class Sampler {
   public:
+    /**
+     * @brief Construct a sampler with the given Sobol index.
+     */
     explicit Sampler(unsigned int index) noexcept
         : index(index), dimension(0) {};
 
+    /**
+     * @brief Get the next Sobol sample(s).
+     * @tparam N the number of dimensions to sample.
+     * @return the sampled value(s).
+     */
     template <unsigned int N>
         requires(N >= 1 && N <= constants::SOBOL_MAX_DIM)
     inline auto sample() {
@@ -48,6 +54,11 @@ class Sampler {
     }
 
   private:
+    /**
+     * @brief Hash a 32-bit integer with Laine-Karras.
+     * @param x the integer to hash.
+     * @return the hashed value.
+     */
     static inline uint32_t lk_hash(uint32_t x) {
         x += seed;
         x ^= x * 0x6c50b47cu;
@@ -57,6 +68,11 @@ class Sampler {
         return x;
     }
 
+    /**
+     * @brief Reverse the bits of a 32-bit integer.
+     * @param x the integer to reverse.
+     * @return the integer with its bits reversed.
+     */
     static inline uint32_t reverse_bits(uint32_t x) {
         x = ((x >> 1) & 0x55555555) | ((x << 1) & 0xAAAAAAAA);
         x = ((x >> 2) & 0x33333333) | ((x << 2) & 0xCCCCCCCC);
@@ -66,6 +82,11 @@ class Sampler {
         return x;
     }
 
+    /**
+     * @brief Scramble a 32-bit integer using Laine-Karras and bit reversal.
+     * @param x the integer to scramble.
+     * @return the scrambled value.
+     */
     static inline uint32_t scramble(uint32_t x) {
         x = reverse_bits(x);
         x = lk_hash(x);
@@ -73,9 +94,13 @@ class Sampler {
         return x;
     }
 
+    /**
+     * @brief The seed used for scrambling Sobol samples.
+     */
     static constexpr uint32_t seed = 42;
-    unsigned int              index;
-    unsigned int              dimension;
+
+    unsigned int index;
+    unsigned int dimension;
 };
 
 } // namespace hls

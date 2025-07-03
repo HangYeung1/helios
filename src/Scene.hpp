@@ -41,7 +41,7 @@ class Scene {
                       Sampler   &sampler) const {
         std::optional<Intersection> intersection = intersect(ray);
         if (!intersection) {
-            return BounceType::Emissive;
+            return BounceType::None;
         }
 
         const auto &[object, normal] = *intersection;

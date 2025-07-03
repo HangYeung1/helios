@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Sampler.hpp"
 #include "Scene.hpp"
 
 #include <glm/vec3.hpp>
@@ -49,6 +50,17 @@ class Camera {
     void render(const Scene &scene) const;
 
   private:
+    /**
+     * @brief Trace a ray through the scene.
+     * @param scene the scene to trace the ray in
+     * @param ray the ray to trace.
+     * @param sampler the sampler to use for random sampling.
+     * @return the radiance of the pixel.
+     */
+    inline glm::vec3 trace_ray(const hls::Scene &scene,
+                               Ray              &ray,
+                               Sampler          &sampler) const;
+
     /**
      * @brief Write the rendered image to a PPM P6 file.
      * @param pixels the pixel data.

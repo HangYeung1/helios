@@ -53,43 +53,10 @@ void hls::Camera::render(const Scene &scene) const {
                     auto [r1, r2]  = sampler.sample<2>();
                     glm::vec3 cast = basis + r1 * delta_u + r2 * delta_v;
                     Ray       ray(position, glm::normalize(cast - position));
-
-                    glm::vec3 radiance(0.0f);
-                    glm::vec3 throughput(1.0f);
-
-                    glm::vec3    total_radiance(0.0f);
-                    unsigned int radiance_samples = 1;
-
-                    for (unsigned int _ = 0; _ < max_bounces; ++_) {
-                        BounceType bounce_type =
-                            scene.bounce(ray, radiance, throughput, sampler);
-
-                        switch (bounce_type) {
-                        case BounceType::Diffuse:
-                        case BounceType::Refactive: {
-                            std::optional<glm::vec3> indirect =
-                                scene.sample_indirect(
-                                    ray, radiance, throughput, sampler);
-                            if (indirect) {
-                                total_radiance += *indirect;
-                                ++radiance_samples;
-                            }
-                            break;
-                        }
-                        case BounceType::Specular:
-                            break;
-                        case BounceType::Emissive:
-                            total_radiance += radiance;
-                            return total_radiance
-                                   / static_cast<float>(radiance_samples);
-                        }
-                    }
-
-                    total_radiance += radiance;
-                    return total_radiance
-                           / static_cast<float>(radiance_samples);
+                    return trace_ray(scene, ray, sampler);
                 });
 
+            // Convert the accumulated radiance to a gamma-corrected 8-bit value
             glm::vec3   norm  = accumulated / static_cast<float>(pixel_samples);
             glm::vec3   map   = norm / (norm + 1.0f);
             glm::vec3   gamma = glm::pow(map, glm::vec3(1.0f / 2.2f));
@@ -99,6 +66,45 @@ void hls::Camera::render(const Scene &scene) const {
         });
 
     output(pixels);
+}
+
+glm::vec3 hls::Camera::trace_ray(const hls::Scene &scene,
+                                 Ray              &ray,
+                                 Sampler          &sampler) const {
+    // Radiance equally weights indirect light samples
+    glm::vec3    radiance(0.0f);
+    glm::vec3    total_radiance(0.0f);
+    unsigned int radiance_samples = 1;
+
+    glm::vec3 throughput(1.0f);
+
+    // Bounce the ray in the scene up to `max_bounces` times
+    for (unsigned int _ = 0; _ < max_bounces; ++_) {
+        BounceType type = scene.bounce(ray, radiance, throughput, sampler);
+
+        switch (type) {
+        case BounceType::Diffuse: {
+            // Sample indirect lighting
+            std::optional<glm::vec3> indirect =
+                scene.sample_indirect(ray, radiance, throughput, sampler);
+            if (indirect) {
+                total_radiance += *indirect;
+                ++radiance_samples;
+            }
+            break;
+        }
+        case BounceType::Refactive:
+        case BounceType::Specular:
+            break;
+        case BounceType::Emissive:
+        case BounceType::None:
+            total_radiance += radiance;
+            return total_radiance / static_cast<float>(radiance_samples);
+        }
+    }
+
+    total_radiance += radiance;
+    return total_radiance / static_cast<float>(radiance_samples);
 }
 
 void hls::Camera::output(const std::vector<glm::u8vec3> &pixels) const {

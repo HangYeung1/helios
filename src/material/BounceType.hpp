@@ -11,6 +11,7 @@ enum class BounceType {
     Refactive,
     Specular,
     Emissive,
+    None,
 };
 
 } // namespace hls

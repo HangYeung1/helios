@@ -4,4 +4,4 @@ Multithreaded path tracing via randomized quasi-Monte Carlo sampling and physica
 
 A scene with naive diffusive and emissive materials:
 
-![render](https://github.com/user-attachments/assets/22d66bc9-9362-4cab-9691-4e894edcabfe)
+![render](https://github.com/user-attachments/assets/a85a2f81-e335-4ecb-a695-dd939af06a95)
